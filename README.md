@@ -4,32 +4,11 @@ Gedeelde planning voor de casus *Hangende sculptuur (asymmetrisch)*: weekplannin
 
 **Website:** https://faith-al.github.io/hangende-sculptuur/
 
-- **Teamleden** kunnen de site gewoon openen en meekijken. Geen account nodig.
-- **Communicators (Faith en Nariman)** loggen op de site in met een GitHub-sleutel en kunnen dan alles bewerken. Elke wijziging wordt direct opgeslagen in `data.json` in deze repository.
+- **Teamleden** openen de site en kijken mee. Geen account nodig, alleen lezen.
+- **Communicators (Faith en Nariman)** bewerken de planning in de Claude-versie (claude.ai).
+- Een geplande taak in Claude neemt de gegevens over naar `data.json` in deze repository (elke 2 uur tussen 8:00 en 22:00). Bovenaan de site staat wanneer de gegevens voor het laatst zijn bijgewerkt.
 
-Wijzigingen zijn voor kijkers binnen een paar minuten zichtbaar (de pagina ververst elke 2 minuten vanzelf).
-
----
-
-## Inloggen als communicator
-
-### Faith (eigenaar van de repository)
-1. Ga naar **GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
-2. Naam: `planning sculptuur`, vervaldatum: na 20 november (bijv. 60 dagen).
-3. **Repository access:** *Only select repositories* → `hangende-sculptuur`.
-4. **Permissions → Repository permissions → Contents:** *Read and write*.
-5. Klik *Generate token* en kopieer de sleutel (begint met `github_pat_`).
-6. Open de website, klik **Inloggen als communicator** en plak de sleutel.
-
-### Nariman
-1. Faith voegt Nariman toe: repository → **Settings → Collaborators → Add people** → Narimans GitHub-naam. Nariman accepteert de uitnodiging (via e-mail of github.com/notifications).
-2. Nariman maakt een sleutel aan: **Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic)**, vink alleen **`public_repo`** aan, vervaldatum na 20 november.
-   (Een *fine-grained* sleutel werkt hier niet, omdat de repository van Faith is.)
-3. Website openen → **Inloggen als communicator** → sleutel plakken.
-
-**Let op:** deel je sleutel met niemand en zet hem nooit in een bestand of chat. De sleutel blijft alleen in je eigen browser bewaard; klik op **Uitloggen** op een gedeelde computer.
-
----
+Niet met de hand in `data.json` werken: bij de volgende synchronisatie wordt het overschreven met de Claude-versie.
 
 ## GitHub Pages aanzetten (eenmalig)
 Repository → **Settings → Pages** → *Source: Deploy from a branch* → Branch `main`, map `/ (root)` → **Save**. Na ongeveer een minuut staat de site online.

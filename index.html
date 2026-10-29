@@ -210,18 +210,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   <header>
     <span class="eyebrow">Casus · Hangende sculptuur (asymmetrisch)</span>
     <h1>Planning kokers &amp; knopen</h1>
-    <p class="intro">Eén plek voor team Ontwerp (verbindingen ontwerpen) en team Productie (verbindingen maken). Iedereen kan meekijken. De communicators Faith en Nariman werken de planning en het overdrachtslog bij.</p>
-    <div class="editbar">
-      <div id="editOff"><span class="muted">Alleen bekijken</span><button type="button" class="linkbtn" id="btnLogin">Inloggen als communicator</button></div>
-      <div id="editOn" hidden><span class="onpill">Bewerkmodus</span><button type="button" class="linkbtn" id="btnLogout">Uitloggen</button></div>
-      <span class="muted" id="syncInfo"></span>
-    </div>
-    <form id="loginPanel" class="loginpanel" hidden>
-      <div class="field"><label for="tokenInput">GitHub-sleutel (token)</label><input id="tokenInput" type="password" autocomplete="off" placeholder="github_pat_… of ghp_…"></div>
-      <p class="muted" style="margin:0;font-size:13px">De sleutel wordt alleen in deze browser bewaard. Zie de handleiding in de README van de repository.</p>
-      <p id="loginMsg" class="status err" style="margin:0"></p>
-      <div style="display:flex;gap:8px"><button class="btn" type="submit">Inloggen</button><button class="linkbtn" type="button" id="btnCancel">Annuleren</button></div>
-    </form>
+    <p class="intro">Eén plek voor team Ontwerp (verbindingen ontwerpen) en team Productie (verbindingen maken). Deze pagina is om mee te kijken. De communicators Faith en Nariman houden de planning bij.</p>
+    <div class="editbar"><span class="muted" id="syncInfo"></span></div>
     <p class="status" id="status" role="status">Planning laden…</p>
   </header>
 
@@ -630,7 +620,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   const listeners=[];
   const b64e=str=>{const bytes=new TextEncoder().encode(str);let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin)};
   const b64d=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\n/g,'')),c=>c.charCodeAt(0)));
-  const norm=d=>({tasks:d.tasks||[],milestones:d.milestones||[],log:d.log||[],weeks:d.weeks||{},teller:d.teller||{}});
+  const norm=d=>({updatedAt:d.updatedAt||'',tasks:d.tasks||[],milestones:d.milestones||[],log:d.log||[],weeks:d.weeks||{},teller:d.teller||{}});
 
   async function loadRemote(){
     const tok=getToken();
@@ -691,29 +681,10 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     if(p==='meta/teller')return {...docRef('meta','teller'),onSnapshot(cb){const fire=()=>cb({exists:true,data:()=>state.teller});listeners.push(fire);fire();return()=>{}}};
     return docRef(c,id)}};
 
-  /* ---------- bewerkmodus ---------- */
   let lastSync=0;
-  function updateSync(){const e=$('#syncInfo');if(!e)return;if(!lastSync){e.textContent='';return}
-    const m=Math.round((Date.now()-lastSync)/60000);e.textContent='Bijgewerkt '+(m<1?'zojuist':m+' min geleden')}
-  async function checkToken(tok){
-    const r=await fetch(`https://api.github.com/repos/${CFG.owner}/${CFG.repo}`,{headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'}});
-    if(!r.ok)return false;const j=await r.json();return !!(j.permissions&&j.permissions.push);
-  }
-  function renderEditBar(){
-    $('#editOn').hidden=!canWrite;$('#editOff').hidden=canWrite;$('#loginPanel').hidden=true;
-  }
-  $('#btnLogin').addEventListener('click',()=>{$('#loginPanel').hidden=false;$('#tokenInput').focus()});
-  $('#btnCancel').addEventListener('click',()=>{$('#loginPanel').hidden=true});
-  $('#btnLogout').addEventListener('click',()=>{setToken('');canWrite=false;applyWrite();renderEditBar();setStatus('Uitgelogd. Je bekijkt de planning nu alleen.');refreshAll()});
-  $('#loginPanel').addEventListener('submit',async e=>{
-    e.preventDefault();const tok=$('#tokenInput').value.trim();if(!tok)return;
-    const btn=e.target.querySelector('button[type=submit]');btn.disabled=false;btn.textContent='Controleren…';
-    let ok=false;try{ok=await checkToken(tok)}catch(_){}
-    btn.textContent='Inloggen';
-    if(!ok){$('#loginMsg').textContent='Deze sleutel geeft geen schrijfrechten op '+CFG.owner+'/'+CFG.repo+'. Controleer de sleutel en of je toegang hebt tot de repository.';return}
-    setToken(tok);$('#tokenInput').value='';$('#loginMsg').textContent='';
-    canWrite=true;applyWrite();renderEditBar();setStatus('Bewerkmodus aan. Wijzigingen worden direct opgeslagen.');await refresh(true);
-  });
+  function updateSync(){const e=$('#syncInfo');const u=state.updatedAt;if(!u){e.textContent='';return}
+    const d=new Date(u);e.textContent='Gegevens bijgewerkt op '+d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'})+' om '+d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}
+  function renderEditBar(){}
   function refreshAll(){renderTasks();renderMilestones();renderLog();renderWeeks();renderTeller()}
 
   db=store;
@@ -722,9 +693,9 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   db.collection('log').orderBy('at','desc').limit(200).onSnapshot(s=>{log=s.docs.map(x=>x.data());renderLog()});
   db.collection('weeks').onSnapshot(s=>{weekGoals={};s.docs.forEach(x=>weekGoals[x.id]=x.data());renderWeeks()});
   db.doc('meta/teller').onSnapshot(s=>{teller={...s.data()};renderTeller()});
-  canWrite=!!getToken();applyWrite();renderEditBar();
+  canWrite=false;applyWrite();
   setStatus('Planning laden…');
-  refresh().then(()=>{if(canWrite)setStatus('Bewerkmodus aan.')});
+  refresh();
   setInterval(()=>{if(!document.hidden)refresh(true);updateSync()},120000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastSync>30000)refresh(true)});
 })();
