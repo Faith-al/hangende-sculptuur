@@ -4,6 +4,7 @@
    "id": "concept-knoop",
    "created": 1793231200000,
    "due": "2026-11-05",
+   "kind": "deadline",
    "status": "open",
    "team": "ontwerp",
    "title": "Concept knoop afronden en overdragen aan Productie",
@@ -12,7 +13,8 @@
   {
    "id": "grasshopper-rhino",
    "created": 1793232300001,
-   "due": "2026-10-30",
+   "due": "2026-10-29",
+   "kind": "taak",
    "status": "open",
    "team": "productie",
    "title": "Uitzoeken hoe we de verbindingen in Grasshopper en Rhino maken",
@@ -22,6 +24,7 @@
    "id": "start-printen",
    "created": 1793231200001,
    "due": "2026-11-11",
+   "kind": "deadline",
    "status": "open",
    "team": "productie",
    "title": "Beginnen met 3D-printen van de knopen",
@@ -30,7 +33,8 @@
   {
    "id": "testprint-koppeling",
    "created": 1793232300000,
-   "due": "2026-10-30",
+   "due": "2026-10-29",
+   "kind": "taak",
    "status": "open",
    "team": "productie",
    "title": "Testprintje maken: tolerantie, diepte en grip van de koppeling testen op de afmetingen van de staafjes",
@@ -101,5 +105,5 @@
   "knopenTotaal": 0,
   "kokers": 0
  },
- "updatedAt": "2026-10-29T11:44:43+00:00"
+ "updatedAt": "2026-10-29T12:35:29+00:00"
 }

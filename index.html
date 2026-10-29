@@ -182,6 +182,8 @@ textarea{resize:vertical;min-height:64px}
 .dtasks{list-style:none;margin:0;padding:0;display:grid;gap:5px}
 .dtasks li{display:grid;gap:1px;padding:5px 7px;border-radius:5px;background:var(--surface);border-left:3px solid var(--kraft);min-width:0}
 .dtasks li.ontwerp{border-left-color:var(--ontwerp)}
+.dtasks li.deadline{background:var(--warn-soft);border:1px dashed var(--warn);border-left:3px solid var(--kraft)}
+.dtasks li.deadline.ontwerp{border-left-color:var(--ontwerp)}
 .dtasks li.done .dt-t{text-decoration:line-through;color:var(--muted)}
 .dt-t{font-family:var(--f-body);font-weight:600;font-size:13px;line-height:1.3;overflow-wrap:anywhere}
 .dt-m{font-family:var(--f-body);font-size:11px;color:var(--muted);overflow-wrap:anywhere}
@@ -247,8 +249,10 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     <div class="team-head"><h2 id="wkTitle">Weekplanning · 28 okt – 20 nov</h2><span class="progress" id="schooldagen"></span></div>
     <div class="legend">
       <span><i style="background:repeating-linear-gradient(135deg,var(--bg) 0 3px,var(--line) 3px 4px);border:1px solid var(--line)"></i>Ma &amp; di: leerplek, geen school</span>
-      <span><i style="background:var(--ontwerp)"></i>Deadlines Ontwerp</span>
-      <span><i style="background:var(--kraft)"></i>Deadlines Productie</span>
+      <span><i style="background:var(--ontwerp)"></i>Ontwerp</span>
+      <span><i style="background:var(--kraft)"></i>Productie</span>
+      <span><i style="background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--muted)"></i>Taak: werk op die dag</span>
+      <span><i style="background:var(--warn-soft);border:1px dashed var(--warn)"></i>Deadline: moet dan af zijn</span>
     </div>
     <div class="weeks" id="weeks"></div>
   </section>
@@ -298,7 +302,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <form class="addform" data-add>
         <div class="field full"><label for="o-title">Nieuwe taak</label><input id="o-title" name="title" required maxlength="140" placeholder="Bijv. knoop voor 3 kokers onder 120° testen"></div>
         <div class="field"><label for="o-who">Wie</label><select id="o-who" name="who" data-who="ontwerp"></select></div>
-        <div class="field"><label for="o-due">Deadline</label><input id="o-due" name="due" type="date"></div>
+        <div class="field"><label for="o-kind">Soort</label><select id="o-kind" name="kind"><option value="taak">Taak (werk op die dag)</option><option value="deadline">Deadline (moet dan af)</option></select></div>
+        <div class="field"><label for="o-due">Datum</label><input id="o-due" name="due" type="date"></div>
         <div class="full"><button class="btn" type="submit">Taak toevoegen</button></div>
       </form>
     </div>
@@ -309,7 +314,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <form class="addform" data-add>
         <div class="field full"><label for="p-title">Nieuwe taak</label><input id="p-title" name="title" required maxlength="140" placeholder="Bijv. testprint knoop v1, passing op koker checken"></div>
         <div class="field"><label for="p-who">Wie</label><select id="p-who" name="who" data-who="productie"></select></div>
-        <div class="field"><label for="p-due">Deadline</label><input id="p-due" name="due" type="date"></div>
+        <div class="field"><label for="p-kind">Soort</label><select id="p-kind" name="kind"><option value="taak">Taak (werk op die dag)</option><option value="deadline">Deadline (moet dan af)</option></select></div>
+        <div class="field"><label for="p-due">Datum</label><input id="p-due" name="due" type="date"></div>
         <div class="full"><button class="btn" type="submit">Taak toevoegen</button></div>
       </form>
     </div>
@@ -414,8 +420,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     for(const m of milestones.filter(m=>m.date===ds))c.append(el('span','mtag','◆ '+m.title));
     const due=tasks.filter(t=>t.due===ds).sort((a,b)=>(a.status==='klaar')-(b.status==='klaar'));
     if(due.length){const ul=el('ul','dtasks');
-      for(const t of due){const li=el('li',t.team+(t.status==='klaar'?' done':''));li.append(el('span','dt-t',t.title));
-        li.append(el('span','dt-m',(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.who?' · '+t.who:'')+(t.status==='bezig'?' · bezig':t.status==='klaar'?' · klaar':'')));ul.append(li)}
+      for(const t of due){const kd=t.kind==='taak'?'taak':'deadline';const li=el('li',t.team+' '+kd+(t.status==='klaar'?' done':''));li.append(el('span','dt-t',t.title));
+        li.append(el('span','dt-m',(kd==='taak'?'Taak · ':'Deadline · ')+(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.who?' · '+t.who:'')+(t.status==='bezig'?' · bezig':t.status==='klaar'?' · klaar':'')));ul.append(li)}
       c.append(ul)}
   }
   function renderWeeks(){
@@ -502,7 +508,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       if(next){nx.append('Volgende deadline: ');nx.append(el('b',null,fmtDate(next.due)))}else if(!late)nx.append(mine.length?'Geen openstaande deadlines':'Nog geen taken toegewezen');
       card.append(nx);
       if(mine.length){const ul=el('ul','m-tasks');for(const t of mine){const li=el('li',t.status);li.append(el('span','pill '+t.status,t.status));
-        const tt=el('span','tt',t.title);tt.append(el('small',null,(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.due?' · '+fmtDate(t.due):'')));li.append(tt);ul.append(li)}card.append(ul)}
+        const tt=el('span','tt',t.title);tt.append(el('small',null,(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.due?' · '+(t.kind==='taak'?'taak ':'deadline ')+fmtDate(t.due):'')));li.append(tt);ul.append(li)}card.append(ul)}
       box.append(card);
     }
   }
@@ -579,7 +585,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         const body=el('div','t-body');body.append(el('span','t-title',t.title));
         const meta=el('div','t-meta');
         if(t.who)meta.append(el('span',null,t.who));
-        if(t.due){const d=daysTo(t.due);const s=el('span',d<0&&t.status!=='klaar'?'late':null,(d<0&&t.status!=='klaar'?'te laat · ':'')+fmtDate(t.due));meta.append(s);const k=dayKind(t.due);if(k==='leerplek'||k==='weekend')meta.append(el('span','lp',k==='leerplek'?'leerplekdag':'weekend'))}
+        if(t.due){const d=daysTo(t.due);const s=el('span',d<0&&t.status!=='klaar'?'late':null,(d<0&&t.status!=='klaar'?(t.kind==='taak'?'niet afgerond · ':'te laat · '):'')+(t.kind==='taak'?'Taak op ':'Deadline ')+fmtDate(t.due));meta.append(s);const k=dayKind(t.due);if(k==='leerplek'||k==='weekend')meta.append(el('span','lp',k==='leerplek'?'leerplekdag':'weekend'))}
         if(meta.childNodes.length)body.append(meta);
         const del=el('button','del','Verwijder');del.type='button';del.disabled=!canWrite;
         let armed=false,timer;
@@ -596,7 +602,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const team=f.closest('[data-team]').dataset.team, fd=new FormData(f);
     const title=(fd.get('title')||'').trim();if(!title)return;
     const btn=f.querySelector('button');btn.disabled=true;
-    try{await db.collection('tasks').add({team,title,who:(fd.get('who')||'').trim(),due:fd.get('due')||'',status:'open',created:Date.now()});
+    try{await db.collection('tasks').add({team,title,who:(fd.get('who')||'').trim(),due:fd.get('due')||'',kind:fd.get('kind')||'taak',status:'open',created:Date.now()});
       f.querySelector('[name=title]').value='';f.querySelector('[name=who]').value='';f.querySelector('[name=due]').value='';setStatus('Taak toegevoegd.')}
     catch(err){writeFail(err)}finally{btn.disabled=!canWrite}
   }));
