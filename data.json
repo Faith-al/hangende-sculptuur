@@ -1,0 +1,104 @@
+{
+ "tasks": [
+  {
+   "id": "concept-knoop",
+   "created": 1793231200000,
+   "due": "2026-11-05",
+   "status": "open",
+   "team": "ontwerp",
+   "title": "Concept knoop afronden en overdragen aan Productie",
+   "who": ""
+  },
+  {
+   "id": "grasshopper-rhino",
+   "created": 1793232300001,
+   "due": "2026-10-30",
+   "status": "open",
+   "team": "productie",
+   "title": "Uitzoeken hoe we de verbindingen in Grasshopper en Rhino maken",
+   "who": "Faith, Edgar, Dora, Renske, Ilse"
+  },
+  {
+   "id": "start-printen",
+   "created": 1793231200001,
+   "due": "2026-11-11",
+   "status": "open",
+   "team": "productie",
+   "title": "Beginnen met 3D-printen van de knopen",
+   "who": ""
+  },
+  {
+   "id": "testprint-koppeling",
+   "created": 1793232300000,
+   "due": "2026-10-30",
+   "status": "open",
+   "team": "productie",
+   "title": "Testprintje maken: tolerantie, diepte en grip van de koppeling testen op de afmetingen van de staafjes",
+   "who": "Lieke, Sem"
+  }
+ ],
+ "milestones": [
+  {
+   "id": "m1",
+   "date": "2026-10-28",
+   "note": "Taakverdeling: team Ontwerp en team Productie.",
+   "order": 1,
+   "title": "Start opdracht"
+  },
+  {
+   "id": "m2",
+   "date": "2026-11-20",
+   "note": "Minimaal 5 knopen geprint en parametrisch ontwerp laten zien.",
+   "order": 4,
+   "title": "Presentatie"
+  },
+  {
+   "id": "m3",
+   "date": "",
+   "note": "Resterende knopen printen en de sculptuur opbouwen.",
+   "order": 5,
+   "title": "Casus 3"
+  },
+  {
+   "id": "m4",
+   "date": "2026-11-20",
+   "note": "Sculptuur hangt veilig aan één of meerdere punten.",
+   "order": 6,
+   "title": "Einddeadline: veilig ophangen"
+  },
+  {
+   "id": "m5",
+   "date": "2026-11-05",
+   "note": "Team Ontwerp levert het knoopconcept op aan team Productie.",
+   "order": 2,
+   "title": "Concept knoop klaar (Ontwerp)"
+  },
+  {
+   "id": "m6",
+   "date": "2026-11-11",
+   "note": "Team Productie begint met printen van de knopen in PLA.",
+   "order": 3,
+   "title": "Start 3D-printen (Productie)"
+  }
+ ],
+ "weeks": {
+  "w44": {
+   "goal": "Voorstel: kokers meten (binnen- en buitendiameter), schetsen van de asymmetrische compositie, eerste knoopconcept."
+  },
+  "w45": {
+   "goal": "Ontwerp: concept knoop klaar op donderdag 5 nov. Productie: printer en instellingen voorbereiden, testprint als het concept binnen is."
+  },
+  "w46": {
+   "goal": "Woensdag 11 nov start het 3D-printen. Doel: minimaal 5 knopen geprint, presentatie voorbereiden."
+  },
+  "w47": {
+   "goal": "Voorstel: resterende knopen printen (casus 3), sculptuur opbouwen en veilig ophangen vóór vrijdag 20 nov."
+  }
+ },
+ "log": [],
+ "teller": {
+  "knopenGeprint": 0,
+  "knopenTotaal": 0,
+  "kokers": 0
+ }
+}

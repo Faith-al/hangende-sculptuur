@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Planning Hangende Sculptuur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: werkplaatsbord — tellers bovenaan, mijlpalen als koker-lijn, twee teamkolommen, overdrachtslog eronder */
+:root{
+  --bg:#ECEEE9; --surface:#F7F8F5; --line:#CDD1C8; --fg:#1C221E; --muted:#5E665F;
+  --ontwerp:#2B55D9; --ontwerp-soft:#DCE4FB;
+  --kraft:#9A6A3A; --kraft-soft:#EEDFCB;
+  --ok:#2E7D4F; --ok-soft:#D7EEDF; --warn:#A86A00; --warn-soft:#F6E6C4; --bad:#B3261E;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Public Sans",ui-sans-serif,system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141815; --surface:#1C211D; --line:#323A34; --fg:#E6EAE4; --muted:#9AA39B;
+  --ontwerp:#8AA6FF; --ontwerp-soft:#202B4A; --kraft:#D3A472; --kraft-soft:#3A2C1D;
+  --ok:#6FCB94; --ok-soft:#1B3325; --warn:#E7B45A; --warn-soft:#3A2E17; --bad:#FF8A80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141815; --surface:#1C211D; --line:#323A34; --fg:#E6EAE4; --muted:#9AA39B;
+  --ontwerp:#8AA6FF; --ontwerp-soft:#202B4A; --kraft:#D3A472; --kraft-soft:#3A2C1D;
+  --ok:#6FCB94; --ok-soft:#1B3325; --warn:#E7B45A; --warn-soft:#3A2E17; --bad:#FF8A80; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:36px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(28px,5vw,44px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:700}
+h3{font-size:17px;font-weight:600}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ontwerp);outline-offset:2px}
+
+header{display:grid;gap:14px}
+.intro{max-width:64ch;color:var(--muted);margin:0}
+
+/* tellers */
+.meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.meter{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.meter-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.big{font:500 30px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.big small{font-size:15px;color:var(--muted)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--kraft);transition:width .3s}
+.bar.ok>i{background:var(--ok)}
+.stepper{display:flex;gap:6px;align-items:center}
+.stepper button{width:32px;height:32px;border:1px solid var(--line);background:var(--bg);border-radius:6px;font:500 16px var(--f-mono)}
+.stepper input{width:64px;height:32px;border:1px solid var(--line);background:var(--bg);border-radius:6px;text-align:center;font:500 14px var(--f-mono)}
+.meter .hint{font-size:13px;color:var(--muted);margin:0}
+
+/* mijlpalen */
+.track{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.ms{border-top:4px solid var(--kraft);padding-top:10px;display:grid;gap:6px;min-width:0}
+.ms.past{border-top-color:var(--ok)}
+.ms .when{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ms input[type=date]{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 6px;font:13px var(--f-mono)}
+.ms p{margin:0;font-size:14px;color:var(--muted)}
+.countdown{font:500 12px var(--f-mono);padding:2px 7px;border-radius:99px;background:var(--kraft-soft);color:var(--kraft)}
+.ms.past .countdown{background:var(--ok-soft);color:var(--ok)}
+
+/* teams */
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.team{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:14px;align-content:start;min-width:0}
+.team-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.team-head h2 .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:1px}
+.t-ontwerp .dot{background:var(--ontwerp)} .t-productie .dot{background:var(--kraft)}
+.progress{font:13px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.tasks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.task{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:10px;border-radius:8px;background:var(--bg)}
+.task.klaar .t-title{text-decoration:line-through;color:var(--muted)}
+.t-body{min-width:0;display:grid;gap:4px}
+.t-title{font-weight:600;overflow-wrap:anywhere}
+.t-meta{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted)}
+.t-meta .late{color:var(--bad);font-weight:600}
+.pill{border:0;border-radius:99px;padding:3px 10px;font:500 12px/1.4 var(--f-mono);min-width:62px}
+.pill.open{background:var(--line);color:var(--fg)}
+.pill.bezig{background:var(--warn-soft);color:var(--warn)}
+.pill.klaar{background:var(--ok-soft);color:var(--ok)}
+.del{border:0;background:none;color:var(--muted);font-size:13px;padding:2px 4px;border-radius:4px}
+.del.arm{color:var(--bad);font-weight:600}
+.empty{padding:14px;border:1px dashed var(--line);border-radius:8px;color:var(--muted);font-size:14px;margin:0}
+.addform{display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.addform .full{grid-column:1/-1}
+.field{display:grid;gap:3px;min-width:0}
+.field label{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:7px 9px;width:100%}
+textarea{resize:vertical;min-height:64px}
+.btn{border:0;border-radius:7px;padding:9px 14px;font-weight:600;background:var(--fg);color:var(--bg)}
+.t-ontwerp .btn{background:var(--ontwerp);color:#fff}
+.t-productie .btn{background:var(--kraft);color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* log */
+.log{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:760px){.log{grid-template-columns:1fr}.addform{grid-template-columns:1fr}}
+.logform{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:10px}
+.entries{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.entry{display:grid;grid-template-columns:110px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.entry:first-child{padding-top:0}
+.e-when{font:12px/1.5 var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.e-from{display:inline-block;font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;margin-bottom:4px}
+.e-from.ontwerp{background:var(--ontwerp-soft);color:var(--ontwerp)}
+.e-from.productie{background:var(--kraft-soft);color:var(--kraft)}
+.e-text{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+.e-need{margin:6px 0 0;padding:6px 10px;border-radius:6px;background:var(--warn-soft);color:var(--fg);font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.e-need b{color:var(--warn)}
+@media (max-width:480px){.entry{grid-template-columns:1fr;gap:4px}}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tabs a{padding:10px 16px;text-decoration:none;color:var(--muted);font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs a[aria-current="page"]{color:var(--fg);border-bottom-color:var(--fg)}
+.tabs a .n{font:500 12px var(--f-mono);margin-left:6px;color:var(--muted)}
+.view{display:grid;gap:36px}
+/* teamleden */
+.tsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.tsum>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px}
+.members{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.member{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;align-content:start;min-width:0}
+.m-head{display:flex;gap:12px;align-items:center}
+.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font:700 17px var(--f-display);color:#fff;flex:none}
+.avatar.ontwerp{background:var(--ontwerp)} .avatar.productie{background:var(--kraft)}
+.avatar.beide{background:linear-gradient(135deg,var(--ontwerp) 50%,var(--kraft) 50%)}
+.m-name{display:grid;gap:4px;min-width:0}
+.m-name h3{font-size:19px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font:500 10px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:4px 6px;border-radius:4px}
+.chip.comm{background:var(--fg);color:var(--bg)}
+.chip.ontwerp{background:var(--ontwerp-soft);color:var(--ontwerp)} .chip.productie{background:var(--kraft-soft);color:var(--kraft)}
+.m-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.m-stats div{background:var(--bg);border-radius:6px;padding:6px 4px;display:grid;gap:2px}
+.m-stats b{font:500 18px var(--f-mono);font-variant-numeric:tabular-nums}
+.m-stats span{font-size:11px;color:var(--muted)}
+.m-tasks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.m-tasks li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;font-size:14px}
+.m-tasks .pill{min-width:0;padding:2px 7px;font-size:11px}
+.m-tasks .tt{min-width:0;overflow-wrap:anywhere}
+.m-tasks .tt small{display:block;color:var(--muted);font-size:12px}
+.m-tasks li.klaar .tt{color:var(--muted);text-decoration:line-through}
+.m-next{font-size:13px;color:var(--muted)} .m-next b{color:var(--fg)} .m-next .late{color:var(--bad);font-weight:600}
+
+/* vandaag */
+.todaybar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.todaybar>div{background:var(--surface);padding:14px 16px;display:grid;gap:6px;min-width:0}
+.todaybar .v{font:500 22px/1.15 var(--f-mono);font-variant-numeric:tabular-nums}
+.todaybar .v.date{font-family:var(--f-display);font-weight:700;font-size:22px}
+.todaybar .s{font-size:13px;color:var(--muted)}
+.wkdots{display:flex;gap:4px}
+.wkdots i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.wkdots i.done{background:var(--ok)} .wkdots i.cur{background:var(--fg)}
+
+/* weken */
+.weeks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.week{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;align-content:start;min-width:0}
+.week.now{border-color:var(--fg)}
+.week-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.week-head .range{font:12px var(--f-mono);color:var(--muted)}
+.days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.day{border-radius:6px;padding:6px 4px;min-height:74px;display:grid;align-content:start;gap:4px;background:var(--bg);font-size:12px;min-width:0}
+.day .dl{font:500 11px var(--f-mono);color:var(--muted);text-transform:lowercase}
+.day.leerplek{background:repeating-linear-gradient(135deg,var(--bg) 0 5px,var(--line) 5px 6px);opacity:.85}
+.day.leerplek .tag{font:10px var(--f-mono);color:var(--muted)}
+.day.out{opacity:.35}
+.day.today{outline:2px solid var(--fg);outline-offset:-2px}
+.day .cnt{display:flex;gap:3px;flex-wrap:wrap}
+.cnt span{font:500 10px/1 var(--f-mono);padding:3px 5px;border-radius:4px;color:#fff}
+.cnt .o{background:var(--ontwerp)} .cnt .p{background:var(--kraft)}
+.day .mtag{font:600 10px/1.2 var(--f-body);color:var(--fg);overflow-wrap:anywhere}
+.goal{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:7px 9px;width:100%;min-height:76px;resize:vertical;font-size:14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.t-meta .lp{color:var(--warn);font-weight:600}
+
+.editbar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:14px}
+.editbar>div{display:flex;gap:10px;align-items:center}
+.linkbtn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;font-weight:600;font-size:13px}
+.onpill{font:500 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:var(--ok-soft);color:var(--ok)}
+.loginpanel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px;max-width:520px}
+.readonly .addform,.readonly #logForm,.readonly .stepper,.readonly .del{display:none!important}
+.readonly .log{grid-template-columns:1fr}
+.readonly .pill{cursor:default}
+.readonly .ms input[type=date]{border-color:transparent;background:none;padding-left:0;color:var(--fg);opacity:1}
+.readonly .goal{border-color:transparent;background:none;resize:none;padding-left:0;min-height:0;color:var(--fg);opacity:1}
+.readonly .goal:placeholder-shown{display:none}
+.readonly .goal{field-sizing:content;overflow:hidden}
+.status:empty{display:none}
+
+details.rules{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:17px}
+.rules ul{margin:12px 0 0;padding-left:20px;display:grid;gap:4px;max-width:70ch}
+.status{font-size:13px;color:var(--muted);min-height:1.5em}
+.status.err{color:var(--bad)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Casus · Hangende sculptuur (asymmetrisch)</span>
+    <h1>Planning kokers &amp; knopen</h1>
+    <p class="intro">Eén plek voor team Ontwerp (verbindingen ontwerpen) en team Productie (verbindingen maken). Iedereen kan meekijken. De communicators Faith en Nariman werken de planning en het overdrachtslog bij.</p>
+    <div class="editbar">
+      <div id="editOff"><span class="muted">Alleen bekijken</span><button type="button" class="linkbtn" id="btnLogin">Inloggen als communicator</button></div>
+      <div id="editOn" hidden><span class="onpill">Bewerkmodus</span><button type="button" class="linkbtn" id="btnLogout">Uitloggen</button></div>
+      <span class="muted" id="syncInfo"></span>
+    </div>
+    <form id="loginPanel" class="loginpanel" hidden>
+      <div class="field"><label for="tokenInput">GitHub-sleutel (token)</label><input id="tokenInput" type="password" autocomplete="off" placeholder="github_pat_… of ghp_…"></div>
+      <p class="muted" style="margin:0;font-size:13px">De sleutel wordt alleen in deze browser bewaard. Zie de handleiding in de README van de repository.</p>
+      <p id="loginMsg" class="status err" style="margin:0"></p>
+      <div style="display:flex;gap:8px"><button class="btn" type="submit">Inloggen</button><button class="linkbtn" type="button" id="btnCancel">Annuleren</button></div>
+    </form>
+    <p class="status" id="status" role="status">Planning laden…</p>
+  </header>
+
+  <nav class="tabs" aria-label="Weergave">
+    <a href="#planning" data-tab="planning">Planning</a>
+    <a href="#team" data-tab="team">Teamleden<span class="n">10</span></a>
+  </nav>
+
+  <div class="view" id="view-planning">
+
+  <section aria-labelledby="wkTitle" style="display:grid;gap:14px">
+    <div class="todaybar" aria-live="polite">
+      <div><span class="eyebrow">Vandaag</span><span class="v date" id="tdDate">–</span><span class="s" id="tdKind"></span></div>
+      <div><span class="eyebrow">Projectweek</span><span class="v" id="tdWeek">–</span><div class="wkdots" id="tdDots"><i></i><i></i><i></i><i></i></div></div>
+      <div><span class="eyebrow">Tot 20 november</span><span class="v" id="tdLeft">–</span><span class="s" id="tdSchool"></span></div>
+    </div>
+    <div class="team-head"><h2 id="wkTitle">Weekplanning · 28 okt – 20 nov</h2><span class="progress" id="schooldagen"></span></div>
+    <div class="legend">
+      <span><i style="background:repeating-linear-gradient(135deg,var(--bg) 0 3px,var(--line) 3px 4px);border:1px solid var(--line)"></i>Ma &amp; di: leerplek, geen school</span>
+      <span><i style="background:var(--ontwerp)"></i>Deadlines Ontwerp</span>
+      <span><i style="background:var(--kraft)"></i>Deadlines Productie</span>
+    </div>
+    <div class="weeks" id="weeks"></div>
+  </section>
+
+  <section class="meters" aria-label="Voortgang">
+    <div class="meter">
+      <div class="meter-row"><span class="eyebrow">Knopen geprint</span><span class="big" id="knopenBig">0 <small>/ 5</small></span></div>
+      <div class="bar" id="knopenBar"><i style="width:0"></i></div>
+      <div class="stepper">
+        <button type="button" data-step="knopenGeprint" data-d="-1" aria-label="Eén knoop minder">−</button>
+        <input id="knopenGeprint" type="number" min="0" inputmode="numeric" aria-label="Aantal geprinte knopen">
+        <button type="button" data-step="knopenGeprint" data-d="1" aria-label="Eén knoop meer">+</button>
+      </div>
+      <p class="hint">Minimaal 5 geprint vóór de presentatie. De rest tijdens casus 3.</p>
+    </div>
+    <div class="meter">
+      <div class="meter-row"><span class="eyebrow">Knopen nodig in ontwerp</span><span class="big" id="nodigBig">–</span></div>
+      <div class="stepper">
+        <button type="button" data-step="knopenTotaal" data-d="-1" aria-label="Eén minder">−</button>
+        <input id="knopenTotaal" type="number" min="0" inputmode="numeric" aria-label="Totaal aantal knopen in ontwerp">
+        <button type="button" data-step="knopenTotaal" data-d="1" aria-label="Eén meer">+</button>
+      </div>
+      <p class="hint" id="nodigHint">Vult team Ontwerp in zodra het parametrische model staat.</p>
+    </div>
+    <div class="meter">
+      <div class="meter-row"><span class="eyebrow">Kokers in ontwerp</span><span class="big" id="kokersBig">0 <small>/ 45</small></span></div>
+      <div class="bar" id="kokersBar"><i style="width:0"></i></div>
+      <div class="stepper">
+        <button type="button" data-step="kokers" data-d="-1" aria-label="Eén koker minder">−</button>
+        <input id="kokers" type="number" min="0" max="45" inputmode="numeric" aria-label="Aantal kokers">
+        <button type="button" data-step="kokers" data-d="1" aria-label="Eén koker meer">+</button>
+      </div>
+      <p class="hint" id="kokersHint">Maximaal 45 kokers, gelijke diameter en korte lengte.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="msTitle" style="display:grid;gap:14px">
+    <div class="team-head"><h2 id="msTitle">Mijlpalen</h2><span class="muted" style="font-size:13px">Vul de datums in; de aftelling past zich aan.</span></div>
+    <div class="track" id="milestones"></div>
+  </section>
+
+  <section class="teams" aria-label="Teams">
+    <div class="team t-ontwerp" data-team="ontwerp">
+      <div class="team-head"><h2><span class="dot"></span>Ontwerp</h2><span class="progress" data-progress></span></div>
+      <span class="muted" style="font-size:14px;margin-top:-8px">Knopen ontwerpen in het parametrische model</span>
+      <ul class="tasks" data-list></ul>
+      <form class="addform" data-add>
+        <div class="field full"><label for="o-title">Nieuwe taak</label><input id="o-title" name="title" required maxlength="140" placeholder="Bijv. knoop voor 3 kokers onder 120° testen"></div>
+        <div class="field"><label for="o-who">Wie</label><select id="o-who" name="who" data-who="ontwerp"></select></div>
+        <div class="field"><label for="o-due">Deadline</label><input id="o-due" name="due" type="date"></div>
+        <div class="full"><button class="btn" type="submit">Taak toevoegen</button></div>
+      </form>
+    </div>
+    <div class="team t-productie" data-team="productie">
+      <div class="team-head"><h2><span class="dot"></span>Productie</h2><span class="progress" data-progress></span></div>
+      <span class="muted" style="font-size:14px;margin-top:-8px">Knopen printen in PLA, kokers zagen, passing testen</span>
+      <ul class="tasks" data-list></ul>
+      <form class="addform" data-add>
+        <div class="field full"><label for="p-title">Nieuwe taak</label><input id="p-title" name="title" required maxlength="140" placeholder="Bijv. testprint knoop v1, passing op koker checken"></div>
+        <div class="field"><label for="p-who">Wie</label><select id="p-who" name="who" data-who="productie"></select></div>
+        <div class="field"><label for="p-due">Deadline</label><input id="p-due" name="due" type="date"></div>
+        <div class="full"><button class="btn" type="submit">Taak toevoegen</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section aria-labelledby="logTitle" style="display:grid;gap:14px">
+    <div class="team-head"><h2 id="logTitle">Overdrachtslog</h2><span class="muted" style="font-size:13px">Voor de communicators Faith (Productie) en Nariman (Ontwerp): wat is er gedaan, wat heeft het andere team nodig</span></div>
+    <div class="log">
+      <form class="logform" id="logForm">
+        <div class="field"><label for="l-from">Update van</label>
+          <select id="l-from" name="from"><option value="ontwerp">Team Ontwerp</option><option value="productie">Team Productie</option></select></div>
+        <div class="field"><label for="l-author">Communicator</label><select id="l-author" name="author" data-who="comm"></select></div>
+        <div class="field"><label for="l-text">Voortgang</label><textarea id="l-text" name="text" required maxlength="1200" placeholder="Bijv. knoop v2 klaar in model, STL staat in de gedeelde map"></textarea></div>
+        <div class="field"><label for="l-need">Nodig van het andere team (optioneel)</label><textarea id="l-need" name="need" maxlength="600" placeholder="Bijv. exacte binnendiameter van de kokers meten"></textarea></div>
+        <button class="btn" type="submit">Update plaatsen</button>
+      </form>
+      <ul class="entries" id="entries"></ul>
+    </div>
+  </section>
+
+  <details class="rules">
+    <summary>Randvoorwaarden van de opdracht</summary>
+    <ul>
+      <li>Maximaal 45 kartonnen kokers, gelijke diameter en korte lengte</li>
+      <li>Asymmetrische compositie is verplicht</li>
+      <li>Knopen 3D-geprint in PLA</li>
+      <li>Demontabele verbindingen: geen lijm, schroeven of gaten in het karton</li>
+      <li>Parametrisch ontwerp</li>
+      <li>Minimaal 5 knopen geprint vóór de presentatie, de rest tijdens casus 3</li>
+      <li>Licht, ruimtelijk en expressief; ophangen aan één of meerdere punten</li>
+      <li>De constructie moet veilig opgehangen kunnen worden</li>
+    </ul>
+  </details>
+  </div>
+
+  <div class="view" id="view-team" hidden>
+    <section style="display:grid;gap:14px" aria-labelledby="tsTitle">
+      <h2 id="tsTitle">Teams</h2>
+      <div class="tsum" id="teamSummary"></div>
+    </section>
+    <section style="display:grid;gap:14px" aria-labelledby="mbTitle">
+      <div class="team-head"><h2 id="mbTitle">Teamleden</h2><span class="muted" style="font-size:13px">Taken koppel je aan iemand via "Wie" bij het toevoegen op het tabblad Planning.</span></div>
+      <div class="members" id="members"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const statusEl=$('#status');
+  const setStatus=(t,err)=>{statusEl.textContent=t;statusEl.classList.toggle('err',!!err)};
+  const NEXT={open:'bezig',bezig:'klaar',klaar:'open'};
+  const LABEL={open:'open',bezig:'bezig',klaar:'klaar'};
+  let db=null, canWrite=false;
+  let tasks=[], milestones=[], log=[], teller={};
+
+  const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+  const parseDate=s=>{if(!s)return null;const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+  const fmtDate=s=>{const d=parseDate(s);return d?d.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'}):''};
+  const daysTo=s=>{const d=parseDate(s);return d?Math.round((d-today())/864e5):null};
+  const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
+
+  function writeFail(e){
+    if(e&&e.code==='invalid_argument'){setStatus('Opslaan geweigerd door GitHub. Controleer of je sleutel nog geldig is en schrijfrechten heeft.',true)}
+        else setStatus('Opslaan lukte niet. Probeer het zo opnieuw.',true);
+  }
+  function applyWrite(){document.body.classList.toggle('readonly',!canWrite);document.querySelectorAll('form:not(#loginPanel) button, .stepper button, .stepper input, .ms input, .goal, select').forEach(b=>b.disabled=!canWrite)}
+
+  /* periode */
+  const START='2026-10-28', END='2026-11-20';
+  const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const WEEKS=[44,45,46,47].map((nr,i)=>{const mon=new Date(2026,9,26+i*7);
+    return {nr,id:'w'+nr,days:[0,1,2,3,4].map(k=>{const d=new Date(mon);d.setDate(mon.getDate()+k);return ymd(d)})}});
+  const dayKind=s=>{const d=parseDate(s);const wd=d.getDay();if(s<START||s>END)return 'out';if(wd===0||wd===6)return 'weekend';if(wd===1||wd===2)return 'leerplek';return 'school'};
+  let weekGoals={};
+  document.querySelectorAll('input[type=date]').forEach(i=>{i.min=START;i.max=END});
+  $('#schooldagen').textContent=WEEKS.flatMap(w=>w.days).filter(d=>dayKind(d)==='school').length+' schooldagen';
+
+  const weekRefs={};
+  function buildWeeks(){
+    const box=$('#weeks');const t0=ymd(today());
+    for(const w of WEEKS){
+      const card=el('div','week'+(w.days.includes(t0)?' now':''));
+      const f=parseDate(w.days[0]),l=parseDate(w.days[4]);
+      const head=el('div','week-head');head.append(el('h3',null,'Week '+w.nr),el('span','range',f.getDate()+' '+f.toLocaleDateString('nl-NL',{month:'short'})+' – '+l.getDate()+' '+l.toLocaleDateString('nl-NL',{month:'short'})));
+      const grid=el('div','days');
+      const ta=el('textarea','goal');ta.id='goal-'+w.id;ta.setAttribute('aria-label','Weekdoel week '+w.nr);ta.placeholder='Weekdoel…';ta.maxLength=600;
+      ta.addEventListener('change',()=>{if(!db)return;const v=ta.value.trim();if(((weekGoals[w.id]||{}).goal||'')===v)return;
+        weekGoals[w.id]={...(weekGoals[w.id]||{}),goal:v};db.doc('weeks/'+w.id).set({goal:v}).catch(writeFail)});
+      card.append(head,grid,ta);box.append(card);weekRefs[w.id]={grid,ta};
+    }
+  }
+  function renderWeeks(){
+    const t0=ymd(today());
+    for(const w of WEEKS){
+      const {grid,ta}=weekRefs[w.id];grid.innerHTML='';
+      for(const ds of w.days){
+        const kind=dayKind(ds), d=parseDate(ds);
+        const c=el('div','day '+kind+(ds===t0?' today':''));
+        c.append(el('span','dl',d.toLocaleDateString('nl-NL',{weekday:'short'})+' '+d.getDate()));
+        if(kind==='leerplek')c.append(el('span','tag','leerplek'));
+        const due=tasks.filter(t=>t.due===ds&&t.status!=='klaar');
+        const o=due.filter(t=>t.team==='ontwerp').length,p=due.filter(t=>t.team==='productie').length;
+        if(o||p){const cnt=el('div','cnt');if(o)cnt.append(el('span','o',String(o)));if(p)cnt.append(el('span','p',String(p)));
+          cnt.title=due.map(t=>t.title).join('\n');c.append(cnt)}
+        for(const m of milestones.filter(m=>m.date===ds))c.append(el('span','mtag','◆ '+m.title));
+        grid.append(c);
+      }
+      if(document.activeElement!==ta)ta.value=(weekGoals[w.id]&&weekGoals[w.id].goal)||'';
+      if(!canWrite&&!CSS.supports('field-sizing','content')){ta.style.height='auto';ta.style.height=(ta.scrollHeight||60)+'px'}else ta.style.height='';
+      ta.disabled=!canWrite;
+    }
+  }
+  buildWeeks();
+
+  function renderToday(){
+    const t=today(), t0=ymd(t);
+    const ds=t.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    $('#tdDate').textContent=ds.charAt(0).toUpperCase()+ds.slice(1);
+    const k=t0<START?'out':t0>END?'out':dayKind(t0);
+    $('#tdKind').textContent=t0<START?'Project nog niet begonnen':t0>END?'Project afgelopen':k==='leerplek'?'Leerplekdag, geen school':k==='weekend'?'Weekend':'Schooldag';
+    const idx=WEEKS.findIndex(w=>{const mon=parseDate(w.days[0]),sun=new Date(mon);sun.setDate(mon.getDate()+6);return t>=mon&&t<=sun});
+    $('#tdWeek').textContent=idx>=0?`Week ${idx+1} van ${WEEKS.length}`:(t0<START?`0 van ${WEEKS.length}`:`${WEEKS.length} van ${WEEKS.length}`);
+    const after=t0>END;
+    [...$('#tdDots').children].forEach((d,i)=>{d.className=(after||i<idx)?'done':i===idx?'cur':''});
+    $('#tdDots').title=idx>=0?`Kalenderweek ${WEEKS[idx].nr}`:'';
+    const left=Math.round((parseDate(END)-t)/864e5);
+    $('#tdLeft').textContent=left>0?`${left} dag${left===1?'':'en'}`:left===0?'Vandaag!':'Afgelopen';
+    const sch=WEEKS.flatMap(w=>w.days).filter(d=>d>=t0&&dayKind(d)==='school').length;
+    $('#tdSchool').textContent=left>=0?`Nog ${sch} schooldag${sch===1?'':'en'} (vandaag meegeteld)`:'';
+  }
+  let lastDay=ymd(today());
+  renderToday();
+  setInterval(()=>{const d=ymd(today());if(d!==lastDay){lastDay=d;renderToday();renderWeeks();renderMilestones();renderTasks()}},60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){const d=ymd(today());if(d!==lastDay){lastDay=d;renderToday();renderMilestones();renderTasks()}}});
+
+  /* teamleden */
+  const MEMBERS=[
+    {name:'Faith',teams:['productie'],comm:true},{name:'Nariman',teams:['ontwerp'],comm:true},{name:'Dora',teams:['ontwerp','productie']},
+    {name:'Edgar',teams:['ontwerp','productie']},{name:'Emirhan',teams:['ontwerp']},{name:'Esmay',teams:['ontwerp']},
+    {name:'Ilse',teams:['productie']},{name:'Lieke',teams:['productie']},{name:'Renske',teams:['productie']},{name:'Sem',teams:['productie']}];
+  document.querySelectorAll('select[data-who]').forEach(sel=>{
+    const t=sel.dataset.who;const first=el('option',null,t==='all'||t==='comm'?'Kies naam':'Niemand / hele team');first.value='';sel.append(first);
+    MEMBERS.filter(m=>t==='all'||(t==='comm'?m.comm:m.teams.includes(t))).forEach(m=>{const o=el('option',null,m.name);o.value=m.name;sel.append(o)});
+  });
+  const whoList=w=>(w||'').toLowerCase().split(/\s*(?:,|&|\/|\+|\ben\b)\s*/).map(x=>x.trim()).filter(Boolean);
+  const tasksOf=name=>tasks.filter(t=>whoList(t.who).includes(name.toLowerCase()));
+  const statusRank={bezig:0,open:1,klaar:2};
+  function renderTeam(){
+    const sum=$('#teamSummary');sum.innerHTML='';
+    for(const team of ['ontwerp','productie']){
+      const ts=tasks.filter(t=>t.team===team), done=ts.filter(t=>t.status==='klaar').length;
+      const box=el('div');
+      const h=el('div','team-head');const h3=el('h3');const dot=el('span');dot.style.cssText=`display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;background:var(--${team==='ontwerp'?'ontwerp':'kraft'})`;
+      h3.append(dot,team==='ontwerp'?'Ontwerp':'Productie');h.append(h3,el('span','progress',ts.length?`${done}/${ts.length} klaar`:'nog geen taken'));
+      const bar=el('div','bar'+(ts.length&&done===ts.length?' ok':''));const i=el('i');i.style.width=(ts.length?done/ts.length*100:0)+'%';if(team==='ontwerp')i.style.background='var(--ontwerp)';bar.append(i);
+      const names=MEMBERS.filter(m=>m.teams.includes(team)).map(m=>m.name+(m.teams.length>1?'*':'')+(m.comm?' (communicator)':''));
+      const unassigned=ts.filter(t=>!t.who&&t.status!=='klaar').length;
+      box.append(h,bar,el('p','hint',names.join(', ')),el('p','hint',unassigned?`${unassigned} open taak${unassigned===1?'':'en'} zonder eigenaar`:'Alle open taken hebben een eigenaar'));
+      box.querySelectorAll('.hint').forEach(p=>{p.style.margin='0';p.style.fontSize='13px';p.style.color='var(--muted)'});
+      sum.append(box);
+    }
+    const note=el('p','hint','* zit in beide teams');note.style.cssText='margin:0;font-size:13px;color:var(--muted);grid-column:1/-1';sum.append(note);
+
+    const box=$('#members');box.innerHTML='';
+    for(const m of MEMBERS){
+      const mine=tasksOf(m.name).sort((a,b)=>(statusRank[a.status]-statusRank[b.status])||((a.due||'9')<(b.due||'9')?-1:1));
+      const c={open:0,bezig:0,klaar:0};mine.forEach(t=>c[t.status]=(c[t.status]||0)+1);
+      const card=el('article','member');
+      const head=el('div','m-head');
+      const av=el('div','avatar '+(m.teams.length>1?'beide':m.teams[0]),m.name[0]);av.setAttribute('aria-hidden','true');
+      const nm=el('div','m-name');nm.append(el('h3',null,m.name));
+      const chips=el('div','chips');m.teams.forEach(t=>chips.append(el('span','chip '+t,t==='ontwerp'?'Ontwerp':'Productie')));if(m.comm)chips.append(el('span','chip comm','Communicator'));nm.append(chips);
+      head.append(av,nm);card.append(head);
+      const pct=mine.length?Math.round(c.klaar/mine.length*100):0;
+      const bar=el('div','bar'+(mine.length&&pct===100?' ok':''));const bi=el('i');bi.style.width=pct+'%';bar.append(bi);
+      const prow=el('div','meter-row');prow.append(el('span','eyebrow','Voortgang'),el('span','progress',mine.length?`${pct}%`:'–'));
+      card.append(prow,bar);
+      const st=el('div','m-stats');[['open','Open'],['bezig','Bezig'],['klaar','Klaar']].forEach(([k,l])=>{const d=el('div');d.append(el('b',null,String(c[k]||0)),el('span',null,l));st.append(d)});card.append(st);
+      const next=mine.filter(t=>t.status!=='klaar'&&t.due).sort((a,b)=>a.due<b.due?-1:1)[0];
+      const late=mine.filter(t=>t.status!=='klaar'&&t.due&&daysTo(t.due)<0).length;
+      const nx=el('p','m-next');nx.style.margin='0';
+      if(late){nx.append(el('span','late',`${late} te laat`),' · ')}
+      if(next){nx.append('Volgende deadline: ');nx.append(el('b',null,fmtDate(next.due)))}else if(!late)nx.append(mine.length?'Geen openstaande deadlines':'Nog geen taken toegewezen');
+      card.append(nx);
+      if(mine.length){const ul=el('ul','m-tasks');for(const t of mine){const li=el('li',t.status);li.append(el('span','pill '+t.status,t.status));
+        const tt=el('span','tt',t.title);tt.append(el('small',null,(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.due?' · '+fmtDate(t.due):'')));li.append(tt);ul.append(li)}card.append(ul)}
+      box.append(card);
+    }
+  }
+  function showTab(){
+    const h=(location.hash||'').slice(1);const tab=h==='team'?'team':'planning';
+    $('#view-planning').hidden=tab!=='planning';$('#view-team').hidden=tab!=='team';
+    document.querySelectorAll('[data-tab]').forEach(a=>{if(a.dataset.tab===tab)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  }
+  window.addEventListener('hashchange',showTab);showTab();
+
+  /* tellers */
+  function renderTeller(){
+    const g=+teller.knopenGeprint||0, t=+teller.knopenTotaal||0, k=+teller.kokers||0;
+    const goal=t>0?t:5;
+    $('#knopenBig').innerHTML='';$('#knopenBig').append(String(g),' ',el('small',null,'/ '+goal));
+    const kb=$('#knopenBar');kb.firstElementChild.style.width=Math.min(100,g/goal*100)+'%';kb.classList.toggle('ok',g>=5);
+    $('#nodigBig').textContent=t>0?String(t):'–';
+    $('#nodigHint').textContent=t>0?(t>5?`Na de presentatie nog ${Math.max(0,t-g)} te printen in casus 3.`:'Alles kan vóór de presentatie geprint worden.'):'Vult team Ontwerp in zodra het parametrische model staat.';
+    $('#kokersBig').innerHTML='';$('#kokersBig').append(String(k),' ',el('small',null,'/ 45'));
+    const kk=$('#kokersBar');kk.firstElementChild.style.width=Math.min(100,k/45*100)+'%';kk.firstElementChild.style.background=k>45?'var(--bad)':'';
+    $('#kokersHint').textContent=k>45?`${k-45} kokers te veel: maximaal 45 toegestaan.`:'Maximaal 45 kokers, gelijke diameter en korte lengte.';
+    for(const id of ['knopenGeprint','knopenTotaal','kokers']){const i=document.getElementById(id);if(document.activeElement!==i)i.value=+teller[id]||0}
+  }
+  let tellerBusy=Promise.resolve();
+  function saveTeller(field,val){
+    val=Math.max(0,Math.round(+val||0));
+    if((+teller[field]||0)===val){renderTeller();return}
+    teller={...teller,[field]:val};renderTeller();
+    if(!db)return;
+    tellerBusy=tellerBusy.then(()=>db.doc('meta/teller').set({...teller})).catch(writeFail);
+  }
+  document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{
+    const f=b.dataset.step;saveTeller(f,(+teller[f]||0)+ +b.dataset.d)}));
+  ['knopenGeprint','knopenTotaal','kokers'].forEach(id=>document.getElementById(id).addEventListener('change',e=>saveTeller(id,e.target.value)));
+
+  /* mijlpalen */
+  function renderMilestones(){
+    const box=$('#milestones');box.innerHTML='';
+    if(!milestones.length){box.append(el('p','empty','Nog geen mijlpalen. Ze verschijnen hier zodra de planning geladen is.'));return}
+    for(const m of [...milestones].sort((a,b)=>(a.order||0)-(b.order||0))){
+      const d=daysTo(m.date), past=d!=null&&d<0;
+      const card=el('div','ms'+(past?' past':''));
+      card.append(el('h3',null,m.title||'Mijlpaal'));
+      const when=el('div','when');
+      const inp=el('input');inp.type='date';inp.value=m.date||'';inp.id='ms-'+m.id;inp.setAttribute('aria-label','Datum '+(m.title||''));inp.disabled=!canWrite;
+      inp.addEventListener('change',()=>{if(!db)return;db.doc('milestones/'+m.id).update({date:inp.value}).catch(writeFail)});
+      when.append(inp);
+      if(d!=null)when.append(el('span','countdown',d===0?'vandaag':past?'geweest':`nog ${d} dag${d===1?'':'en'}`));
+      else when.append(el('span','countdown','datum invullen'));
+      card.append(when);
+      if(m.note)card.append(el('p',null,m.note));
+      box.append(card);
+    }
+    renderWeeks();
+  }
+
+  /* taken */
+  function renderTasks(){
+    document.querySelectorAll('[data-team]').forEach(col=>{
+      const team=col.dataset.team, list=col.querySelector('[data-list]');
+      const mine=tasks.filter(t=>t.team===team).sort((a,b)=>{
+        const r={bezig:0,open:1,klaar:2};
+        return (r[a.status]-r[b.status])||((a.due||'9')<(b.due||'9')?-1:(a.due||'9')>(b.due||'9')?1:0)||((a.created||0)-(b.created||0))});
+      const done=mine.filter(t=>t.status==='klaar').length;
+      col.querySelector('[data-progress]').textContent=mine.length?`${done}/${mine.length} klaar`:'';
+      list.innerHTML='';
+      if(!mine.length){list.append(el('li','empty','Nog geen taken. Voeg hieronder de eerste toe.'));return}
+      for(const t of mine){
+        const li=el('li','task '+t.status);
+        const pill=el('button','pill '+t.status,LABEL[t.status]||'open');pill.type='button';
+        pill.title='Klik om status te wijzigen';pill.setAttribute('aria-label',`Status: ${t.status}. Klik voor ${NEXT[t.status]}`);
+        pill.disabled=!canWrite;
+        pill.addEventListener('click',()=>{if(db)db.doc('tasks/'+t.id).update({status:NEXT[t.status]||'open'}).catch(writeFail)});
+        const body=el('div','t-body');body.append(el('span','t-title',t.title));
+        const meta=el('div','t-meta');
+        if(t.who)meta.append(el('span',null,t.who));
+        if(t.due){const d=daysTo(t.due);const s=el('span',d<0&&t.status!=='klaar'?'late':null,(d<0&&t.status!=='klaar'?'te laat · ':'')+fmtDate(t.due));meta.append(s);const k=dayKind(t.due);if(k==='leerplek'||k==='weekend')meta.append(el('span','lp',k==='leerplek'?'leerplekdag':'weekend'))}
+        if(meta.childNodes.length)body.append(meta);
+        const del=el('button','del','Verwijder');del.type='button';del.disabled=!canWrite;
+        let armed=false,timer;
+        del.addEventListener('click',()=>{
+          if(!armed){armed=true;del.textContent='Zeker?';del.classList.add('arm');timer=setTimeout(()=>{armed=false;del.textContent='Verwijder';del.classList.remove('arm')},3000);return}
+          clearTimeout(timer);if(db)db.doc('tasks/'+t.id).delete().catch(writeFail)});
+        li.append(pill,body,del);list.append(li);
+      }
+    });
+    renderWeeks();renderTeam();
+  }
+  document.querySelectorAll('[data-add]').forEach(f=>f.addEventListener('submit',async e=>{
+    e.preventDefault();if(!db)return;
+    const team=f.closest('[data-team]').dataset.team, fd=new FormData(f);
+    const title=(fd.get('title')||'').trim();if(!title)return;
+    const btn=f.querySelector('button');btn.disabled=true;
+    try{await db.collection('tasks').add({team,title,who:(fd.get('who')||'').trim(),due:fd.get('due')||'',status:'open',created:Date.now()});
+      f.querySelector('[name=title]').value='';f.querySelector('[name=who]').value='';f.querySelector('[name=due]').value='';setStatus('Taak toegevoegd.')}
+    catch(err){writeFail(err)}finally{btn.disabled=!canWrite}
+  }));
+
+  /* log */
+  function renderLog(){
+    const ul=$('#entries');ul.innerHTML='';
+    if(!log.length){ul.append(el('li','empty','Nog geen updates. De eerste overdracht van een communicator verschijnt hier, nieuwste bovenaan.'));return}
+    for(const r of log){
+      const li=el('li','entry');
+      const d=new Date(r.at||0);
+      li.append(el('div','e-when',d.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})+'\n'+d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})));
+      li.lastChild.style.whiteSpace='pre-line';
+      const b=el('div');b.style.minWidth='0';
+      const tag=el('span','e-from '+(r.from==='productie'?'productie':'ontwerp'),(r.from==='productie'?'Productie':'Ontwerp')+(r.author?' · '+r.author:''));
+      b.append(tag,el('p','e-text',r.text||''));
+      if(r.need){const n=el('p','e-need');n.append(el('b',null,'Nodig: '),document.createTextNode(r.need));b.append(n)}
+      li.append(b);ul.append(li);
+    }
+  }
+  $('#logForm').addEventListener('submit',async e=>{
+    e.preventDefault();if(!db)return;
+    const f=e.target, fd=new FormData(f), text=(fd.get('text')||'').trim();if(!text)return;
+    const btn=f.querySelector('button');btn.disabled=true;
+    try{await db.collection('log').add({from:fd.get('from'),author:(fd.get('author')||'').trim(),text,need:(fd.get('need')||'').trim(),at:Date.now()});
+      f.querySelector('[name=text]').value='';f.querySelector('[name=need]').value='';setStatus('Update geplaatst.')}
+    catch(err){writeFail(err)}finally{btn.disabled=!canWrite}
+  });
+
+  renderTeller();renderMilestones();renderTasks();renderLog();
+
+  /* ---------- GitHub-opslag ---------- */
+  const CFG=(()=>{const h=location.hostname, seg=location.pathname.split('/').filter(Boolean)[0];
+    if(h.endsWith('.github.io')&&seg)return {owner:h.split('.')[0],repo:seg};
+    return {owner:'Faith-al',repo:'hangende-sculptuur'}})();
+  CFG.branch='main';CFG.file='data.json';
+  const API=`https://api.github.com/repos/${CFG.owner}/${CFG.repo}/contents/${CFG.file}`;
+  const TKEY='hs-token';
+  const getToken=()=>{try{return localStorage.getItem(TKEY)||''}catch(_){return ''}};
+  const setToken=v=>{try{v?localStorage.setItem(TKEY,v):localStorage.removeItem(TKEY)}catch(_){}};
+  let state={tasks:[],milestones:[],log:[],weeks:{},teller:{}}, sha=null;
+  const listeners=[];
+  const b64e=str=>{const bytes=new TextEncoder().encode(str);let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin)};
+  const b64d=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\n/g,'')),c=>c.charCodeAt(0)));
+  const norm=d=>({tasks:d.tasks||[],milestones:d.milestones||[],log:d.log||[],weeks:d.weeks||{},teller:d.teller||{}});
+
+  async function loadRemote(){
+    const tok=getToken();
+    if(tok){
+      const r=await fetch(API+'?ref='+CFG.branch+'&t='+Date.now(),{headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'},cache:'no-store'});
+      if(r.ok){const j=await r.json();sha=j.sha;return norm(JSON.parse(b64d(j.content)))}
+      if(r.status===401){setToken('');throw {code:'auth'}}
+    }
+    const urls=[`https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${CFG.file}?t=${Date.now()}`,'data.json?t='+Date.now()];
+    for(const u of urls){try{const r=await fetch(u,{cache:'no-store'});if(r.ok)return norm(await r.json())}catch(_){}}
+    throw {code:'load'};
+  }
+  function emit(){listeners.forEach(l=>l())}
+  async function refresh(quiet){
+    try{state=await loadRemote();emit();if(!quiet&&!canWrite)setStatus('');lastSync=Date.now();updateSync()}
+    catch(e){if(e&&e.code==='auth'){canWrite=false;applyWrite();renderEditBar();setStatus('Je GitHub-sleutel werkt niet meer. Log opnieuw in om te bewerken.',true)}
+      else if(!quiet)setStatus('De planning kon niet geladen worden. Controleer je internet en herlaad de pagina.',true)}
+  }
+  // Elke wijziging: haal de nieuwste versie op, pas de wijziging toe, sla op als commit.
+  let queue=Promise.resolve();
+  function commit(label,fn){
+    const job=queue.then(async()=>{
+      for(let attempt=0;attempt<3;attempt++){
+        const fresh=await loadRemote();fn(fresh);
+        const r=await fetch(API,{method:'PUT',headers:{Authorization:'Bearer '+getToken(),Accept:'application/vnd.github+json','Content-Type':'application/json'},
+          body:JSON.stringify({message:label,content:b64e(JSON.stringify(fresh,null,1)+'\n'),sha,branch:CFG.branch})});
+        if(r.ok){const j=await r.json();sha=j.content.sha;state=fresh;emit();lastSync=Date.now();updateSync();setStatus('Opgeslagen.');return}
+        if(r.status===409||r.status===422)continue;
+        if(r.status===401||r.status===403||r.status===404)throw {code:'invalid_argument'};
+        throw {code:'unavailable'};
+      }
+      throw {code:'unavailable'};
+    });
+    queue=job.catch(()=>{});
+    return job;
+  }
+  const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  const colGet=(d,name)=>name==='weeks'?Object.entries(d.weeks).map(([id,v])=>({id,...v})):d[name];
+  function docRef(name,id){
+    if(name==='meta')return {set:o=>commit('Tellers bijgewerkt',d=>{d.teller={...o}}),update:o=>commit('Tellers bijgewerkt',d=>{Object.assign(d.teller,o)})};
+    if(name==='weeks')return {set:o=>commit('Weekdoel '+id,d=>{d.weeks[id]={...o}}),update:o=>commit('Weekdoel '+id,d=>{d.weeks[id]={...(d.weeks[id]||{}),...o}})};
+    return {
+      set:o=>commit(`${name}: ${id}`,d=>{const i=d[name].findIndex(x=>x.id===id);const v={id,...o};i<0?d[name].push(v):d[name][i]=v}),
+      update:o=>commit(`${name}: ${id} bijgewerkt`,d=>{const x=d[name].find(x=>x.id===id);if(x)Object.assign(x,o)}),
+      delete:()=>commit(`${name}: ${id} verwijderd`,d=>{d[name]=d[name].filter(x=>x.id!==id)})};
+  }
+  function query(name,opts={}){
+    const q={orderBy:(f,dir)=>query(name,{...opts,f,dir}),limit:n=>query(name,{...opts,n}),
+      onSnapshot(cb){const fire=()=>{let rows=[...colGet(state,name)];
+          if(opts.f)rows.sort((a,b)=>(a[opts.f]>b[opts.f]?1:-1)*(opts.dir==='desc'?-1:1));if(opts.n)rows=rows.slice(0,opts.n);
+          cb({docs:rows.map(r=>{const {id,...rest}=r;return {id,data:()=>rest}})})};
+        listeners.push(fire);fire();return()=>{}},
+      add:o=>{const id=uid();return commit(name==='log'?'Overdrachtslog':'Nieuwe taak: '+(o.title||''),d=>{d[name].push({id,...o})})},
+      doc:id=>docRef(name,id)};
+    return q;
+  }
+  const store={collection:n=>query(n),doc:p=>{const [c,id]=p.split('/');
+    if(p==='meta/teller')return {...docRef('meta','teller'),onSnapshot(cb){const fire=()=>cb({exists:true,data:()=>state.teller});listeners.push(fire);fire();return()=>{}}};
+    return docRef(c,id)}};
+
+  /* ---------- bewerkmodus ---------- */
+  let lastSync=0;
+  function updateSync(){const e=$('#syncInfo');if(!e)return;if(!lastSync){e.textContent='';return}
+    const m=Math.round((Date.now()-lastSync)/60000);e.textContent='Bijgewerkt '+(m<1?'zojuist':m+' min geleden')}
+  async function checkToken(tok){
+    const r=await fetch(`https://api.github.com/repos/${CFG.owner}/${CFG.repo}`,{headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'}});
+    if(!r.ok)return false;const j=await r.json();return !!(j.permissions&&j.permissions.push);
+  }
+  function renderEditBar(){
+    $('#editOn').hidden=!canWrite;$('#editOff').hidden=canWrite;$('#loginPanel').hidden=true;
+  }
+  $('#btnLogin').addEventListener('click',()=>{$('#loginPanel').hidden=false;$('#tokenInput').focus()});
+  $('#btnCancel').addEventListener('click',()=>{$('#loginPanel').hidden=true});
+  $('#btnLogout').addEventListener('click',()=>{setToken('');canWrite=false;applyWrite();renderEditBar();setStatus('Uitgelogd. Je bekijkt de planning nu alleen.');refreshAll()});
+  $('#loginPanel').addEventListener('submit',async e=>{
+    e.preventDefault();const tok=$('#tokenInput').value.trim();if(!tok)return;
+    const btn=e.target.querySelector('button[type=submit]');btn.disabled=false;btn.textContent='Controleren…';
+    let ok=false;try{ok=await checkToken(tok)}catch(_){}
+    btn.textContent='Inloggen';
+    if(!ok){$('#loginMsg').textContent='Deze sleutel geeft geen schrijfrechten op '+CFG.owner+'/'+CFG.repo+'. Controleer de sleutel en of je toegang hebt tot de repository.';return}
+    setToken(tok);$('#tokenInput').value='';$('#loginMsg').textContent='';
+    canWrite=true;applyWrite();renderEditBar();setStatus('Bewerkmodus aan. Wijzigingen worden direct opgeslagen.');await refresh(true);
+  });
+  function refreshAll(){renderTasks();renderMilestones();renderLog();renderWeeks();renderTeller()}
+
+  db=store;
+  db.collection('tasks').onSnapshot(s=>{tasks=s.docs.map(x=>({id:x.id,...x.data()}));renderTasks()});
+  db.collection('milestones').onSnapshot(s=>{milestones=s.docs.map(x=>({id:x.id,...x.data()}));renderMilestones()});
+  db.collection('log').orderBy('at','desc').limit(200).onSnapshot(s=>{log=s.docs.map(x=>x.data());renderLog()});
+  db.collection('weeks').onSnapshot(s=>{weekGoals={};s.docs.forEach(x=>weekGoals[x.id]=x.data());renderWeeks()});
+  db.doc('meta/teller').onSnapshot(s=>{teller={...s.data()};renderTeller()});
+  canWrite=!!getToken();applyWrite();renderEditBar();
+  setStatus('Planning laden…');
+  refresh().then(()=>{if(canWrite)setStatus('Bewerkmodus aan.')});
+  setInterval(()=>{if(!document.hidden)refresh(true);updateSync()},120000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastSync>30000)refresh(true)});
+})();
+</script>
+
+</body>
+</html>
