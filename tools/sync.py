@@ -25,6 +25,7 @@ new = {
     'milestones': col('milestones'),
     'weeks': {r['id']: {k: v for k, v in r.items() if k != 'id'} for r in col('weeks')},
     'log': sorted(col('log'), key=lambda r: r.get('at', 0), reverse=True),
+    'reflecties': col('reflecties'),
     'teller': teller,
 }
 old = {}

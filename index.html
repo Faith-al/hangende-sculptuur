@@ -125,7 +125,7 @@ textarea{resize:vertical;min-height:64px}
 .view{display:grid;gap:36px}
 /* teamleden */
 .tsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-.tsum>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px}
+.tsum>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
 .members{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
 .member{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;align-content:start;min-width:0}
 .m-head{display:flex;gap:12px;align-items:center}
@@ -148,6 +148,22 @@ textarea{resize:vertical;min-height:64px}
 .m-tasks .tt{min-width:0;overflow-wrap:anywhere}
 .m-tasks .tt small{display:block;color:var(--muted);font-size:12px}
 .m-tasks li.klaar .tt{color:var(--muted);text-decoration:line-through}
+.linkbtn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 9px;font-weight:600;font-size:12px}
+.refl{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px}
+.refl-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.refl dl{margin:0;display:grid;gap:6px}
+.refl dt{font:500 10px var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.refl dt i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.refl dt.g i{background:var(--ok)} .refl dt.b i{background:var(--bad)} .refl dt.d i{background:var(--muted)} .refl dt.n i{background:var(--ontwerp)}
+.refl dd{margin:0;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.refl .none{font-size:13px;color:var(--muted);margin:0}
+.refl details summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.refl details .old{display:grid;gap:10px;margin-top:8px;padding-left:10px;border-left:2px solid var(--line)}
+.refl .rdate{font:500 12px var(--f-mono);color:var(--muted)}
+.refl-actions{display:flex;gap:6px;align-items:center}
+.reflform{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.reflform .full{grid-column:1/-1}
+@media (max-width:760px){.reflform{grid-template-columns:1fr}}
 .m-next{font-size:13px;color:var(--muted)} .m-next b{color:var(--fg)} .m-next .late{color:var(--bad);font-weight:600}
 
 /* vandaag */
@@ -356,8 +372,20 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <h2 id="tsTitle">Teams</h2>
       <div class="tsum" id="teamSummary"></div>
     </section>
+    <section style="display:grid;gap:14px" aria-labelledby="rfTitle" id="reflSection">
+      <div class="team-head"><h2 id="rfTitle">Voortgang per teamlid invullen</h2><span class="muted" style="font-size:13px">Komt op de kaart van dat teamlid te staan</span></div>
+      <form class="reflform" id="reflForm">
+        <div class="field"><label for="r-member">Voor wie?</label><select id="r-member" name="member" required></select></div>
+        <div class="field"><label for="r-date">Datum</label><input id="r-date" name="date" type="date" required></div>
+        <div class="field full"><label for="r-done">Wat heeft hij/zij gedaan?</label><textarea id="r-done" name="done" maxlength="800" required placeholder="Bijv. testprintje gemaakt van knoop v1"></textarea></div>
+        <div class="field"><label for="r-good">Wat ging goed?</label><textarea id="r-good" name="good" maxlength="600" placeholder="Bijv. diepte van de koppeling klopte"></textarea></div>
+        <div class="field"><label for="r-bad">Wat ging minder goed?</label><textarea id="r-bad" name="bad" maxlength="600" placeholder="Bijv. tolerantie te krap, koker past niet"></textarea></div>
+        <div class="field full"><label for="r-next">Wat gaat hij/zij de volgende keer doen?</label><textarea id="r-next" name="next" maxlength="600" placeholder="Bijv. tolerantie met 0,2 mm verruimen en opnieuw printen"></textarea></div>
+        <div class="full"><button class="btn" type="submit">Voortgang opslaan</button></div>
+      </form>
+    </section>
     <section style="display:grid;gap:14px" aria-labelledby="mbTitle">
-      <div class="team-head"><h2 id="mbTitle">Teamleden</h2><span class="muted" style="font-size:13px">Taken koppel je aan iemand via "Wie" bij het toevoegen op het tabblad Planning.</span></div>
+      <div class="team-head"><h2 id="mbTitle">Teamleden</h2><span class="muted" style="font-size:13px">Taken, voortgang en wat iedereen de volgende keer doet.</span></div>
       <div class="members" id="members"></div>
     </section>
   </div>
@@ -383,7 +411,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     if(e&&e.code==='invalid_argument'){setStatus('Opslaan geweigerd door GitHub. Controleer of je sleutel nog geldig is en schrijfrechten heeft.',true)}
         else setStatus('Opslaan lukte niet. Probeer het zo opnieuw.',true);
   }
-  function applyWrite(){document.body.classList.toggle('readonly',!canWrite);document.querySelectorAll('form:not(#loginPanel) button, .stepper button, .stepper input, .ms input, .goal, select').forEach(b=>b.disabled=!canWrite)}
+  function applyWrite(){const rs=document.getElementById('reflSection');if(rs)rs.hidden=!canWrite;document.body.classList.toggle('readonly',!canWrite);document.querySelectorAll('form:not(#loginPanel) button, .stepper button, .stepper input, .ms input, .goal, select').forEach(b=>b.disabled=!canWrite)}
 
   /* periode */
   const START='2026-10-28', END='2026-11-20';
@@ -482,6 +510,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       const unassigned=ts.filter(t=>!t.who&&t.status!=='klaar').length;
       box.append(h,bar,el('p','hint',names.join(', ')),el('p','hint',unassigned?`${unassigned} open taak${unassigned===1?'':'en'} zonder eigenaar`:'Alle open taken hebben een eigenaar'));
       box.querySelectorAll('.hint').forEach(p=>{p.style.margin='0';p.style.fontSize='13px';p.style.color='var(--muted)'});
+      box.append(teamReflBlock(team));
       sum.append(box);
     }
     const note=el('p','hint','* zit in beide teams');note.style.cssText='margin:0;font-size:13px;color:var(--muted);grid-column:1/-1';sum.append(note);
@@ -509,9 +538,56 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       card.append(nx);
       if(mine.length){const ul=el('ul','m-tasks');for(const t of mine){const li=el('li',t.status);li.append(el('span','pill '+t.status,t.status));
         const tt=el('span','tt',t.title);tt.append(el('small',null,(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.due?' · '+(t.kind==='taak'?'taak ':'deadline ')+fmtDate(t.due):'')));li.append(tt);ul.append(li)}card.append(ul)}
+      card.append(reflBlock(m));
       box.append(card);
     }
   }
+  let refl=[];
+  function reflDl(r){
+    const dl=el('dl');
+    [['d','Gedaan',r.done],['g','Ging goed',r.good],['b','Ging minder goed',r.bad],['n','Volgende keer',r.next]].forEach(([c,l,v])=>{
+      if(!v)return;const dt=el('dt',c);dt.append(el('i'),l);dl.append(dt,el('dd',null,v))});
+    return dl;
+  }
+  function delBtn(r){
+    const del=el('button','del','Verwijder');del.type='button';del.disabled=!canWrite;let armed=false,timer;
+    del.addEventListener('click',()=>{if(!armed){armed=true;del.textContent='Zeker?';del.classList.add('arm');timer=setTimeout(()=>{armed=false;del.textContent='Verwijder';del.classList.remove('arm')},3000);return}
+      clearTimeout(timer);if(db)db.doc('reflecties/'+r.id).delete().catch(writeFail)});
+    return del;
+  }
+  const byDate=(a,b)=>(b.date||'').localeCompare(a.date||'')||(b.at||0)-(a.at||0);
+  function reflBlock(m){return reflView(refl.filter(r=>r.member===m.name&&!r.group).sort(byDate),m.name,'Voortgang')}
+  function teamReflBlock(team){return reflView(refl.filter(r=>r.group===team).sort(byDate),'team:'+team,'Groepsvoortgang')}
+  function reflView(mine,target,label){
+    const box=el('div','refl');
+    const head=el('div','refl-head');head.append(el('span','eyebrow',label));
+    const acts=el('div','refl-actions');
+    if(mine[0])acts.append(el('span','rdate',fmtDate(mine[0].date)));
+    if(canWrite){const add=el('button','linkbtn','+ Invullen');add.type='button';add.addEventListener('click',()=>{
+      $('#r-member').value=target;$('#reflSection').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});$('#r-done').focus({preventScroll:true})});acts.append(add)}
+    head.append(acts);box.append(head);
+    if(!mine.length){box.append(el('p','none',target.startsWith('team:')?'Nog geen groepsvoortgang ingevuld.':'Nog niets ingevuld.'));return box}
+    box.append(reflDl(mine[0]));
+    if(canWrite){const a=el('div');a.style.textAlign='right';a.append(delBtn(mine[0]));box.append(a)}
+    if(mine.length>1){const d=el('details');d.append(el('summary',null,`Eerdere updates (${mine.length-1})`));const old=el('div','old');
+      for(const r of mine.slice(1)){const w=el('div');w.style.display='grid';w.style.gap='4px';const h=el('div','refl-head');h.append(el('span','rdate',fmtDate(r.date)));if(canWrite)h.append(delBtn(r));w.append(h,reflDl(r));old.append(w)}
+      d.append(old);box.append(d)}
+    return box;
+  }
+  (()=>{const sel=$('#r-member');const o0=el('option',null,'Kies teamlid of team');o0.value='';sel.append(o0);
+    const g=el('optgroup');g.label='Hele team (komt bij Teams te staan)';
+    [['team:ontwerp','Team Ontwerp'],['team:productie','Team Productie']].forEach(([v,l])=>{const o=el('option',null,l);o.value=v;g.append(o)});
+    const gm=el('optgroup');gm.label='Eén teamlid';MEMBERS.forEach(m=>{const o=el('option',null,m.name);o.value=m.name;gm.append(o)});
+    sel.append(g,gm)})();
+  $('#r-date').value=ymd(today());
+  $('#reflForm').addEventListener('submit',async e=>{
+    e.preventDefault();if(!db)return;const f=e.target,fd=new FormData(f);
+    const who=fd.get('member')||'';const rec={member:who.startsWith('team:')?'':who,group:who.startsWith('team:')?who.slice(5):'',date:fd.get('date')||ymd(today()),done:(fd.get('done')||'').trim(),good:(fd.get('good')||'').trim(),bad:(fd.get('bad')||'').trim(),next:(fd.get('next')||'').trim(),at:Date.now()};
+    if((!rec.member&&!rec.group)||!rec.done)return;
+    const btn=f.querySelector('button[type=submit]');btn.disabled=true;
+    try{await db.collection('reflecties').add(rec);['done','good','bad','next'].forEach(n=>f.querySelector('[name='+n+']').value='');setStatus(rec.group?'Groepsvoortgang voor team '+(rec.group==='ontwerp'?'Ontwerp':'Productie')+' opgeslagen.':'Voortgang van '+rec.member+' opgeslagen.')}
+    catch(err){writeFail(err)}finally{btn.disabled=!canWrite}
+  });
   function showTab(){
     const h=(location.hash||'').slice(1);const tab=h==='team'?'team':'planning';
     $('#view-planning').hidden=tab!=='planning';$('#view-team').hidden=tab!=='team';
@@ -643,11 +719,11 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   const TKEY='hs-token';
   const getToken=()=>{try{return localStorage.getItem(TKEY)||''}catch(_){return ''}};
   const setToken=v=>{try{v?localStorage.setItem(TKEY,v):localStorage.removeItem(TKEY)}catch(_){}};
-  let state={tasks:[],milestones:[],log:[],weeks:{},teller:{}}, sha=null;
+  let state={tasks:[],milestones:[],log:[],reflecties:[],weeks:{},teller:{}}, sha=null;
   const listeners=[];
   const b64e=str=>{const bytes=new TextEncoder().encode(str);let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin)};
   const b64d=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\n/g,'')),c=>c.charCodeAt(0)));
-  const norm=d=>({updatedAt:d.updatedAt||'',tasks:d.tasks||[],milestones:d.milestones||[],log:d.log||[],weeks:d.weeks||{},teller:d.teller||{}});
+  const norm=d=>({updatedAt:d.updatedAt||'',tasks:d.tasks||[],milestones:d.milestones||[],log:d.log||[],reflecties:d.reflecties||[],weeks:d.weeks||{},teller:d.teller||{}});
 
   async function loadRemote(){
     const tok=getToken();
@@ -718,6 +794,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   db.collection('tasks').onSnapshot(s=>{tasks=s.docs.map(x=>({id:x.id,...x.data()}));renderTasks()});
   db.collection('milestones').onSnapshot(s=>{milestones=s.docs.map(x=>({id:x.id,...x.data()}));renderMilestones()});
   db.collection('log').orderBy('at','desc').limit(200).onSnapshot(s=>{log=s.docs.map(x=>x.data());renderLog()});
+  db.collection('reflecties').onSnapshot(s=>{refl=s.docs.map(x=>({id:x.id,...x.data()}));renderTeam()});
   db.collection('weeks').onSnapshot(s=>{weekGoals={};s.docs.forEach(x=>weekGoals[x.id]=x.data());renderWeeks()});
   db.doc('meta/teller').onSnapshot(s=>{teller={...s.data()};renderTeller()});
   canWrite=false;applyWrite();
