@@ -102,6 +102,16 @@
  "log": [],
  "reflecties": [
   {
+   "id": "02trk76dw9o31dkcl6s2",
+   "at": 1793290444732,
+   "date": "2026-10-29",
+   "done": "individueel concepten gemaakt",
+   "group": "ontwerp",
+   "member": "",
+   "next": "bespreken welke concept ze gaan doen",
+   "result": "onderweg"
+  },
+  {
    "id": "6374mzl55z3ucl93rkkz",
    "at": 1793290189104,
    "date": "2026-10-29",
@@ -109,6 +119,16 @@
    "group": "",
    "member": "Renske",
    "next": "",
+   "result": "onderweg"
+  },
+  {
+   "id": "c4g18cbrusjmdtd6fk72",
+   "at": 1793290489739,
+   "date": "2026-10-29",
+   "done": "test kokers geprint en is begonnen hoe de verbindingen mogelijk in grashopper worden gemaakt.",
+   "group": "productie",
+   "member": "",
+   "next": "ze gaan de grotere printer testen om te zien wat de verschillen tussen de machines zijn, Verder met grashopper en sketchup testen om alvast makkelijk een model te maken.",
    "result": "onderweg"
   },
   {
@@ -127,5 +147,5 @@
   "knopenTotaal": 0,
   "kokers": 0
  },
- "updatedAt": "2026-10-29T16:13:17+00:00"
+ "updatedAt": "2026-10-29T16:18:15+00:00"
 }
