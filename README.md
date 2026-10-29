@@ -6,7 +6,7 @@ Gedeelde planning voor de casus *Hangende sculptuur (asymmetrisch)*: weekplannin
 
 - **Teamleden** openen de site en kijken mee. Geen account nodig, alleen lezen.
 - **Communicators (Faith en Nariman)** bewerken de planning in de Claude-versie (claude.ai).
-- Een geplande taak in Claude neemt de gegevens over naar `data.json` in deze repository (elke 2 uur tussen 8:00 en 22:00). Bovenaan de site staat wanneer de gegevens voor het laatst zijn bijgewerkt.
+- De gegevens worden via Claude overgezet naar `data.json` in deze repository wanneer Faith daarom vraagt. Bovenaan de site staat wanneer de gegevens voor het laatst zijn bijgewerkt.
 
 Niet met de hand in `data.json` werken: bij de volgende synchronisatie wordt het overschreven met de Claude-versie.
 
