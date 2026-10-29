@@ -21,6 +21,28 @@
    "who": "Faith, Edgar, Dora, Renske, Ilse"
   },
   {
+   "id": "morgen-02trk76dw9o31dkcl6s2",
+   "created": 1793291200000,
+   "due": "2026-10-30",
+   "fromRefl": "02trk76dw9o31dkcl6s2",
+   "kind": "taak",
+   "status": "open",
+   "team": "ontwerp",
+   "title": "bespreken welke concept ze gaan doen",
+   "who": ""
+  },
+  {
+   "id": "morgen-c4g18cbrusjmdtd6fk72",
+   "created": 1793291200001,
+   "due": "2026-10-30",
+   "fromRefl": "c4g18cbrusjmdtd6fk72",
+   "kind": "taak",
+   "status": "open",
+   "team": "productie",
+   "title": "ze gaan de grotere printer testen om te zien wat de verschillen tussen de machines zijn, Verder met grashopper en sketchup testen om alvast makkelijk een model te maken.",
+   "who": ""
+  },
+  {
    "id": "start-printen",
    "created": 1793231200001,
    "due": "2026-11-11",
@@ -147,5 +169,5 @@
   "knopenTotaal": 0,
   "kokers": 0
  },
- "updatedAt": "2026-10-29T16:18:15+00:00"
+ "updatedAt": "2026-10-29T16:27:18+00:00"
 }
