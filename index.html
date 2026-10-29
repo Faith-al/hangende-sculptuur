@@ -161,23 +161,39 @@ textarea{resize:vertical;min-height:64px}
 .wkdots i.done{background:var(--ok)} .wkdots i.cur{background:var(--fg)}
 
 /* weken */
-.weeks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.week{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;align-content:start;min-width:0}
-.week.now{border-color:var(--fg)}
-.week-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.weeks{display:grid;gap:14px}
+.week{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;min-width:0}
+.week.now{border-color:var(--fg);border-width:2px}
+.week-head{display:flex;justify-content:flex-start;align-items:baseline;gap:12px}
 .week-head .range{font:12px var(--f-mono);color:var(--muted)}
-.days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
-.day{border-radius:6px;padding:6px 4px;min-height:74px;display:grid;align-content:start;gap:4px;background:var(--bg);font-size:12px;min-width:0}
-.day .dl{font:500 11px var(--f-mono);color:var(--muted);text-transform:lowercase}
-.day.leerplek{background:repeating-linear-gradient(135deg,var(--bg) 0 5px,var(--line) 5px 6px);opacity:.85}
+.wk-body{display:grid;grid-template-columns:74px repeat(3,minmax(0,1fr)) minmax(0,1.1fr);gap:6px}
+.lpcol{display:grid;grid-template-rows:1fr 1fr;gap:6px;min-width:0}
+.day{border-radius:8px;padding:8px;display:grid;align-content:start;gap:6px;background:var(--bg);font-size:13px;min-width:0}
+.day.big{min-height:130px}
+.day.small{padding:6px;gap:2px}
+.day .dl{font:500 12px var(--f-mono);color:var(--muted);text-transform:lowercase}
+.day.big .dl{font-size:13px;color:var(--fg)}
+.day.leerplek{background:repeating-linear-gradient(135deg,var(--bg) 0 5px,var(--line) 5px 6px)}
 .day.leerplek .tag{font:10px var(--f-mono);color:var(--muted)}
 .day.out{opacity:.35}
 .day.today{outline:2px solid var(--fg);outline-offset:-2px}
-.day .cnt{display:flex;gap:3px;flex-wrap:wrap}
-.cnt span{font:500 10px/1 var(--f-mono);padding:3px 5px;border-radius:4px;color:#fff}
-.cnt .o{background:var(--ontwerp)} .cnt .p{background:var(--kraft)}
-.day .mtag{font:600 10px/1.2 var(--f-body);color:var(--fg);overflow-wrap:anywhere}
-.goal{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:7px 9px;width:100%;min-height:76px;resize:vertical;font-size:14px}
+.day .mtag{font:600 12px/1.3 var(--f-body);color:var(--fg);overflow-wrap:anywhere}
+.day.small .mtag{font-size:10px}
+.dtasks{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.dtasks li{display:grid;gap:1px;padding:5px 7px;border-radius:5px;background:var(--surface);border-left:3px solid var(--kraft);min-width:0}
+.dtasks li.ontwerp{border-left-color:var(--ontwerp)}
+.dtasks li.done .dt-t{text-decoration:line-through;color:var(--muted)}
+.dt-t{font-family:var(--f-body);font-weight:600;font-size:13px;line-height:1.3;overflow-wrap:anywhere}
+.dt-m{font-family:var(--f-body);font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.day.small .dtasks li{padding:3px 5px}.day.small .dt-t{font-size:11px}.day.small .dt-m{display:none}
+.wk-goal{display:grid;gap:6px;align-content:start;padding:8px;min-width:0}
+@media (max-width:760px){
+  .wk-body{grid-template-columns:1fr}
+  .lpcol{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+  .day.big{min-height:0}
+  .wk-goal{padding:4px 0 0}
+}
+.goal{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:7px 9px;width:100%;min-height:96px;resize:vertical;font-size:14px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);align-items:center}
 .legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
 .t-meta .lp{color:var(--warn);font-weight:600}
@@ -380,31 +396,36 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       const card=el('div','week'+(w.days.includes(t0)?' now':''));
       const f=parseDate(w.days[0]),l=parseDate(w.days[4]);
       const head=el('div','week-head');head.append(el('h3',null,'Week '+w.nr),el('span','range',f.getDate()+' '+f.toLocaleDateString('nl-NL',{month:'short'})+' – '+l.getDate()+' '+l.toLocaleDateString('nl-NL',{month:'short'})));
-      const grid=el('div','days');
+      const body=el('div','wk-body');
+      const lp=el('div','lpcol');const big=[0,1,2].map(()=>el('div','day big'));
+      const gc=el('div','wk-goal');gc.append(el('span','eyebrow','Weekdoel'));
       const ta=el('textarea','goal');ta.id='goal-'+w.id;ta.setAttribute('aria-label','Weekdoel week '+w.nr);ta.placeholder='Weekdoel…';ta.maxLength=600;
       ta.addEventListener('change',()=>{if(!db)return;const v=ta.value.trim();if(((weekGoals[w.id]||{}).goal||'')===v)return;
         weekGoals[w.id]={...(weekGoals[w.id]||{}),goal:v};db.doc('weeks/'+w.id).set({goal:v}).catch(writeFail)});
-      card.append(head,grid,ta);box.append(card);weekRefs[w.id]={grid,ta};
+      gc.append(ta);body.append(lp,...big,gc);
+      card.append(head,body);box.append(card);weekRefs[w.id]={lp,big,ta,card};
     }
+  }
+  function fillDay(c,ds,small){
+    const kind=dayKind(ds), d=parseDate(ds), t0=ymd(today());
+    c.className='day '+(small?'small ':'big ')+kind+(ds===t0?' today':'');c.innerHTML='';
+    c.append(el('span','dl',d.toLocaleDateString('nl-NL',{weekday:'short'})+' '+d.getDate()));
+    if(kind==='leerplek')c.append(el('span','tag','leerplek'));
+    for(const m of milestones.filter(m=>m.date===ds))c.append(el('span','mtag','◆ '+m.title));
+    const due=tasks.filter(t=>t.due===ds).sort((a,b)=>(a.status==='klaar')-(b.status==='klaar'));
+    if(due.length){const ul=el('ul','dtasks');
+      for(const t of due){const li=el('li',t.team+(t.status==='klaar'?' done':''));li.append(el('span','dt-t',t.title));
+        li.append(el('span','dt-m',(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.who?' · '+t.who:'')+(t.status==='bezig'?' · bezig':t.status==='klaar'?' · klaar':'')));ul.append(li)}
+      c.append(ul)}
   }
   function renderWeeks(){
     const t0=ymd(today());
     for(const w of WEEKS){
-      const {grid,ta}=weekRefs[w.id];grid.innerHTML='';
-      for(const ds of w.days){
-        const kind=dayKind(ds), d=parseDate(ds);
-        const c=el('div','day '+kind+(ds===t0?' today':''));
-        c.append(el('span','dl',d.toLocaleDateString('nl-NL',{weekday:'short'})+' '+d.getDate()));
-        if(kind==='leerplek')c.append(el('span','tag','leerplek'));
-        const due=tasks.filter(t=>t.due===ds&&t.status!=='klaar');
-        const o=due.filter(t=>t.team==='ontwerp').length,p=due.filter(t=>t.team==='productie').length;
-        if(o||p){const cnt=el('div','cnt');if(o)cnt.append(el('span','o',String(o)));if(p)cnt.append(el('span','p',String(p)));
-          cnt.title=due.map(t=>t.title).join('\n');c.append(cnt)}
-        for(const m of milestones.filter(m=>m.date===ds))c.append(el('span','mtag','◆ '+m.title));
-        grid.append(c);
-      }
+      const {lp,big,ta,card}=weekRefs[w.id];
+      card.classList.toggle('now',w.days.includes(t0));
+      lp.innerHTML='';[0,1].forEach(i=>{const c=el('div');fillDay(c,w.days[i],true);lp.append(c)});
+      big.forEach((c,i)=>fillDay(c,w.days[i+2],false));
       if(document.activeElement!==ta)ta.value=(weekGoals[w.id]&&weekGoals[w.id].goal)||'';
-      if(!canWrite&&!CSS.supports('field-sizing','content')){ta.style.height='auto';ta.style.height=(ta.scrollHeight||60)+'px'}else ta.style.height='';
       ta.disabled=!canWrite;
     }
   }
