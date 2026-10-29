@@ -461,7 +461,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   /* teamleden */
   const MEMBERS=[
     {name:'Faith',teams:['productie'],comm:true},{name:'Nariman',teams:['ontwerp'],comm:true},{name:'Dora',teams:['ontwerp','productie']},
-    {name:'Edgar',teams:['ontwerp','productie']},{name:'Emirhan',teams:['ontwerp']},{name:'Esmay',teams:['ontwerp']},
+    {name:'Edgar',teams:['productie']},{name:'Emirhan',teams:['ontwerp']},{name:'Esmay',teams:['ontwerp']},
     {name:'Ilse',teams:['productie']},{name:'Lieke',teams:['productie']},{name:'Renske',teams:['productie']},{name:'Sem',teams:['productie']}];
   document.querySelectorAll('select[data-who]').forEach(sel=>{
     const t=sel.dataset.who;const first=el('option',null,t==='all'||t==='comm'?'Kies naam':'Niemand / hele team');first.value='';sel.append(first);
