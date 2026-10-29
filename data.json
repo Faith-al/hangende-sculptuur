@@ -100,11 +100,32 @@
   }
  },
  "log": [],
- "reflecties": [],
+ "reflecties": [
+  {
+   "id": "6374mzl55z3ucl93rkkz",
+   "at": 1793290189104,
+   "date": "2026-10-29",
+   "done": "met een grasshopper script kijken hoe je efficient verschillende vectors die afzonderlijk van elkaar bewegen met een centraal punt kan verbinden.",
+   "group": "",
+   "member": "Renske",
+   "next": "",
+   "result": "onderweg"
+  },
+  {
+   "id": "he03w1z0hluw4tcg213f",
+   "at": 1793290137940,
+   "date": "2026-10-29",
+   "done": "Uitzoeken voor mogelijkheden qua knooppunten in Rhino + Grasshopper doormiddel van Multipipe",
+   "group": "",
+   "member": "Edgar",
+   "next": "Verder duiken in mogelijkheden voor knooppunten los te krijgen/standalone zonder de buizen zelf en of dat überhaupt mogelijk is of anders kijken naar andere mogelijkheden.",
+   "result": "onderweg"
+  }
+ ],
  "teller": {
   "knopenGeprint": 0,
   "knopenTotaal": 0,
   "kokers": 0
  },
- "updatedAt": "2026-10-29T16:04:16+00:00"
+ "updatedAt": "2026-10-29T16:13:17+00:00"
 }
