@@ -746,9 +746,13 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       if(r.ok){const j=await r.json();sha=j.sha;return norm(JSON.parse(b64d(j.content)))}
       if(r.status===401){setToken('');throw {code:'auth'}}
     }
-    const urls=[`https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${CFG.file}?t=${Date.now()}`,'data.json?t='+Date.now()];
-    for(const u of urls){try{const r=await fetch(u,{cache:'no-store'});if(r.ok)return norm(await r.json())}catch(_){}}
-    throw {code:'load'};
+    // Haal beide bronnen tegelijk op en neem de nieuwste versie (GitHub-caches lopen soms een paar minuten achter).
+    const t=Date.now();
+    const urls=['data.json?t='+t,`https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${CFG.file}?t=${t}`];
+    const got=(await Promise.all(urls.map(u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean);
+    if(!got.length)throw {code:'load'};
+    got.sort((x,y)=>String(y.updatedAt||'').localeCompare(String(x.updatedAt||'')));
+    return norm(got[0]);
   }
   function emit(){listeners.forEach(l=>l())}
   async function refresh(quiet){
