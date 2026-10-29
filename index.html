@@ -156,6 +156,15 @@ textarea{resize:vertical;min-height:64px}
 .refl dt i{width:8px;height:8px;border-radius:2px;display:inline-block}
 .refl dt.g i{background:var(--ok)} .refl dt.b i{background:var(--bad)} .refl dt.d i{background:var(--muted)} .refl dt.n i{background:var(--ontwerp)}
 .refl dd{margin:0;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.res{display:inline-block;font:500 12px var(--f-mono);padding:2px 9px;border-radius:99px}
+.res.geslaagd{background:var(--ok-soft);color:var(--ok)} .res.onderweg{background:var(--warn-soft);color:var(--warn)} .res.mislukt{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.flabel{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.seg input{accent-color:var(--fg);margin:0}
+.seg label.ok:has(input:checked){background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.seg label.mid:has(input:checked){background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.seg label.bad:has(input:checked){color:var(--bad);border-color:var(--bad)}
 .refl .none{font-size:13px;color:var(--muted);margin:0}
 .refl details summary{cursor:pointer;font-size:13px;color:var(--muted)}
 .refl details .old{display:grid;gap:10px;margin-top:8px;padding-left:10px;border-left:2px solid var(--line)}
@@ -377,10 +386,14 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <form class="reflform" id="reflForm">
         <div class="field"><label for="r-member">Voor wie?</label><select id="r-member" name="member" required></select></div>
         <div class="field"><label for="r-date">Datum</label><input id="r-date" name="date" type="date" required></div>
-        <div class="field full"><label for="r-done">Wat heeft hij/zij gedaan?</label><textarea id="r-done" name="done" maxlength="800" required placeholder="Bijv. testprintje gemaakt van knoop v1"></textarea></div>
-        <div class="field"><label for="r-good">Wat ging goed?</label><textarea id="r-good" name="good" maxlength="600" placeholder="Bijv. diepte van de koppeling klopte"></textarea></div>
-        <div class="field"><label for="r-bad">Wat ging minder goed?</label><textarea id="r-bad" name="bad" maxlength="600" placeholder="Bijv. tolerantie te krap, koker past niet"></textarea></div>
-        <div class="field full"><label for="r-next">Wat gaat hij/zij de volgende keer doen?</label><textarea id="r-next" name="next" maxlength="600" placeholder="Bijv. tolerantie met 0,2 mm verruimen en opnieuw printen"></textarea></div>
+        <div class="field full"><label for="r-done">Wat je hebt gedaan vandaag</label><textarea id="r-done" name="done" maxlength="800" required placeholder="Bijv. testprintje gemaakt van knoop v1"></textarea></div>
+        <div class="field full"><span class="flabel" id="r-res-l">Hoe het ging</span>
+          <div class="seg" role="radiogroup" aria-labelledby="r-res-l">
+            <label class="ok"><input type="radio" name="result" value="geslaagd" required> Geslaagd</label>
+            <label class="mid"><input type="radio" name="result" value="onderweg"> Onderweg</label>
+            <label class="bad"><input type="radio" name="result" value="mislukt"> Mislukt</label>
+          </div></div>
+        <div class="field full"><label for="r-next">Wat je morgen gaat doen</label><textarea id="r-next" name="next" maxlength="600" placeholder="Bijv. tolerantie met 0,2 mm verruimen en opnieuw printen"></textarea></div>
         <div class="full"><button class="btn" type="submit">Voortgang opslaan</button></div>
       </form>
     </section>
@@ -545,7 +558,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   let refl=[];
   function reflDl(r){
     const dl=el('dl');
-    [['d','Gedaan',r.done],['g','Ging goed',r.good],['b','Ging minder goed',r.bad],['n','Volgende keer',r.next]].forEach(([c,l,v])=>{
+    if(r.result){const dt=el('dt','d');dt.append(el('i'),'Hoe het ging');const dd=el('dd');dd.append(el('span','res '+r.result,r.result.charAt(0).toUpperCase()+r.result.slice(1)));dl.append(dt,dd)}
+    [['d','Gedaan vandaag',r.done],['g','Ging goed',r.good],['b','Ging minder goed',r.bad],['n','Morgen',r.next]].forEach(([c,l,v])=>{
       if(!v)return;const dt=el('dt',c);dt.append(el('i'),l);dl.append(dt,el('dd',null,v))});
     return dl;
   }
@@ -582,10 +596,10 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   $('#r-date').value=ymd(today());
   $('#reflForm').addEventListener('submit',async e=>{
     e.preventDefault();if(!db)return;const f=e.target,fd=new FormData(f);
-    const who=fd.get('member')||'';const rec={member:who.startsWith('team:')?'':who,group:who.startsWith('team:')?who.slice(5):'',date:fd.get('date')||ymd(today()),done:(fd.get('done')||'').trim(),good:(fd.get('good')||'').trim(),bad:(fd.get('bad')||'').trim(),next:(fd.get('next')||'').trim(),at:Date.now()};
+    const who=fd.get('member')||'';const rec={member:who.startsWith('team:')?'':who,group:who.startsWith('team:')?who.slice(5):'',date:fd.get('date')||ymd(today()),done:(fd.get('done')||'').trim(),result:fd.get('result')||'',next:(fd.get('next')||'').trim(),at:Date.now()};
     if((!rec.member&&!rec.group)||!rec.done)return;
     const btn=f.querySelector('button[type=submit]');btn.disabled=true;
-    try{await db.collection('reflecties').add(rec);['done','good','bad','next'].forEach(n=>f.querySelector('[name='+n+']').value='');setStatus(rec.group?'Groepsvoortgang voor team '+(rec.group==='ontwerp'?'Ontwerp':'Productie')+' opgeslagen.':'Voortgang van '+rec.member+' opgeslagen.')}
+    try{await db.collection('reflecties').add(rec);['done','next'].forEach(n=>f.querySelector('[name='+n+']').value='');f.querySelectorAll('[name=result]').forEach(r=>r.checked=false);setStatus(rec.group?'Groepsvoortgang voor team '+(rec.group==='ontwerp'?'Ontwerp':'Productie')+' opgeslagen.':'Voortgang van '+rec.member+' opgeslagen.')}
     catch(err){writeFail(err)}finally{btn.disabled=!canWrite}
   });
   function showTab(){
