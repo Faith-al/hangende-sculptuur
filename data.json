@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T10:10:48.220Z",
+ "updatedAt": "2026-11-03T10:13:37.166Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -169,6 +169,16 @@
    "result": "geslaagd",
    "next": "Grasshopper script gemaakt voor koppeling later met alle kokers, kleine opzet van het idee daarga ik verder mee.",
    "at": 1793700647837
+  },
+  {
+   "id": "mw0j5jz1vkyw0",
+   "member": "Faith",
+   "group": "",
+   "date": "2026-10-29",
+   "done": "Ik heb uitgelegd hoe de 3d printer ongeveer werkte en uitgelegd aan de rest van mijn groep",
+   "result": "geslaagd",
+   "next": "Verder uitzoeken hoe we een parametrische knoopsysteem gaan maken.",
+   "at": 1793700816733
   }
  ],
  "weeks": {
