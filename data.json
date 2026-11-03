@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T09:57:03.991Z",
+ "updatedAt": "2026-11-03T09:57:06.885Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -58,7 +58,7 @@
    "created": 1793232300000,
    "due": "2026-10-29",
    "kind": "taak",
-   "status": "bezig",
+   "status": "klaar",
    "team": "productie",
    "title": "Testprintje maken: tolerantie, diepte en grip van de koppeling testen op de afmetingen van de staafjes",
    "who": "Lieke, Sem"
