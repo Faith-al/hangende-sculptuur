@@ -242,8 +242,8 @@ textarea{resize:vertical;min-height:64px}
 .readonly .goal{field-sizing:content;overflow:hidden}
 .status:empty{display:none}
 
-#reflDlg,#editDlg{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface);color:var(--fg);width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
-#reflDlg::backdrop,#editDlg::backdrop{background:rgba(20,24,21,.45)}
+#dayDlg,#reflDlg,#editDlg{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface);color:var(--fg);width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+#dayDlg::backdrop,#reflDlg::backdrop,#editDlg::backdrop{background:rgba(20,24,21,.45)}
 #editForm{display:grid;gap:12px;padding:20px}
 .ed-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ed-who{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0}
@@ -329,6 +329,14 @@ textarea{resize:vertical;min-height:64px}
 #lightbox .linkbtn{margin:10px auto 0;display:block}
 @media (max-width:760px){.home{grid-template-columns:1fr}}
 
+.me-day{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;font-size:14px;border:1px solid var(--line)}
+.me-day.done{background:var(--ok-soft);border-color:transparent;color:var(--fg)}
+.me-day.todo{background:var(--warn-soft);border-color:transparent}
+.me-day .ic{font:700 16px var(--f-mono)}
+.me-day.done .ic{color:var(--ok)}.me-day.todo .ic{color:var(--warn)}
+.btn.ok{background:var(--ok);color:var(--ink)}
+#btnRefresh{padding:3px 9px}
+
 details.rules{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
 details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:17px}
 .rules ul{margin:12px 0 0;padding-left:20px;display:grid;gap:4px;max-width:70ch}
@@ -353,7 +361,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <div class="editbar">
         <div id="editOff"><span class="muted">Alleen bekijken</span><button type="button" class="linkbtn" id="btnUnlock">Bewerken met teamcode</button></div>
         <div id="editOn" hidden><span class="onpill">Bewerkmodus</span><button type="button" class="linkbtn" id="btnLock">Vergrendelen</button></div>
-        <span class="muted" id="syncInfo"></span>
+        <span class="muted" id="syncInfo"></span><button type="button" class="linkbtn" id="btnRefresh" title="Haal de nieuwste stand op">↻ Ververs</button>
       </div>
       <form id="unlockPanel" class="loginpanel nolock" hidden>
         <div class="field"><label for="codeInput">Teamcode</label><input id="codeInput" type="password" autocomplete="off" placeholder="Code van je team"></div>
@@ -539,7 +547,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
             <label class="mid"><input type="radio" name="result" value="onderweg"> Onderweg</label>
             <label class="bad"><input type="radio" name="result" value="mislukt"> Mislukt</label>
           </div></div>
-        <div class="field full"><label for="r-next">Wat je morgen gaat doen</label><span class="muted" style="font-size:12px">Bij een hele team wordt dit meteen een taak op de volgende schooldag.</span><textarea id="r-next" name="next" maxlength="600" placeholder="Bijv. tolerantie met 0,2 mm verruimen en opnieuw printen"></textarea></div>
+        <div class="field full"><label for="r-next">Wat je morgen gaat doen</label><span class="muted" style="font-size:12px">Dit wordt meteen een taak op de volgende schooldag.</span><textarea id="r-next" name="next" maxlength="600" placeholder="Bijv. tolerantie met 0,2 mm verruimen en opnieuw printen"></textarea></div>
         <div class="field full"><label for="r-photos">Foto's (optioneel, maximaal 4)</label><input id="r-photos" name="photos" type="file" accept="image/*" multiple><div class="ph-prev" id="r-prev"></div></div>
         <div class="full"><button class="btn" type="submit">Voortgang opslaan</button></div>
       </form>
@@ -587,6 +595,23 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <div class="ed-actions"><button class="btn" type="submit" id="rdSave">Opslaan</button><button class="linkbtn" type="button" id="rdCancel">Annuleren</button></div>
     </form>
   </dialog>
+<dialog id="dayDlg" aria-labelledby="dayTitle">
+  <form id="dayForm" class="nolock" method="dialog" style="display:grid;gap:12px;padding:20px">
+    <h3 id="dayTitle">Dag afsluiten</h3>
+    <p class="muted" id="day-who" style="margin:-6px 0 0;font-size:14px"></p>
+    <div class="field"><label for="day-done">Wat heb je vandaag gedaan?</label><textarea id="day-done" required maxlength="800" rows="3" placeholder="Bijv. testprint gemaakt van knoop v2"></textarea></div>
+    <div class="field"><span class="flabel" id="day-res-l">Hoe ging het?</span>
+      <div class="seg" role="radiogroup" aria-labelledby="day-res-l">
+        <label class="ok"><input type="radio" name="dayres" value="geslaagd" required> Geslaagd</label>
+        <label class="mid"><input type="radio" name="dayres" value="onderweg"> Onderweg</label>
+        <label class="bad"><input type="radio" name="dayres" value="mislukt"> Mislukt</label>
+      </div></div>
+    <div class="field"><label for="day-photos">Foto's (optioneel, maximaal 4)</label><input id="day-photos" type="file" accept="image/*" multiple><div class="ph-prev" id="day-prev"></div></div>
+    <div class="field"><label for="day-next">Wat ga je de volgende keer doen?</label><span class="muted" style="font-size:12px" id="day-next-hint"></span><textarea id="day-next" maxlength="600" rows="2" placeholder="Bijv. tolerantie 0,2 mm ruimer en opnieuw printen"></textarea></div>
+    <p id="dayMsg" class="status err" style="margin:0"></p>
+    <div class="ed-actions"><button class="btn" type="submit" id="daySave">Opslaan</button><button class="linkbtn" type="button" id="dayCancel">Annuleren</button></div>
+  </form>
+</dialog>
 <dialog id="lightbox" aria-label="Foto"><img id="lbImg" alt=""><button type="button" class="linkbtn" id="lbClose">Sluiten</button></dialog>
 <script>
 (function(){
@@ -794,7 +819,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   function delBtn(r){
     const del=el('button','del','Verwijder');del.type='button';del.disabled=!canWrite;let armed=false,timer;
     del.addEventListener('click',()=>{if(!armed){armed=true;del.textContent='Zeker?';del.classList.add('arm');timer=setTimeout(()=>{armed=false;del.textContent='Verwijder';del.classList.remove('arm')},3000);return}
-      clearTimeout(timer);if(db){db.doc('reflecties/'+r.id).delete().catch(writeFail);if(r.group)db.doc('tasks/morgen-'+r.id).delete().catch(()=>{})}});
+      clearTimeout(timer);if(db){db.doc('reflecties/'+r.id).delete().catch(writeFail);if(tasks.some(x=>x.id==='morgen-'+r.id))db.doc('tasks/morgen-'+r.id).delete().catch(()=>{})}});
     return del;
   }
   function editBtn(r){const b=el('button','edit','Bewerk');b.type='button';b.addEventListener('click',()=>openReflEdit(r.id));return b}
@@ -838,32 +863,43 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const done=$('#rd-done').value.trim();if(!done){$('#rdMsg').textContent='Vul in wat er gedaan is.';return}
     const res=(document.querySelector('[name=rdres]:checked')||{}).value||'';
     const upd={date:$('#rd-date').value||r.date,done,result:res,next:$('#rd-next').value.trim()};
-    const btn=$('#rdSave');btn.disabled=true;btn.textContent='Opslaan…';
+    const btn=$('#rdSave');if(btn.disabled)return;btnBusy(btn,'Opslaan…');let ok=false;
     try{const add=[...($('#rd-photos').files||[])].slice(0,Math.max(0,4-rdPhotos.length));
-      upd.photos=[...rdPhotos,...(add.length?await uploadPhotos(add,id+'-'+Date.now().toString(36)):[])];
+      upd.photos=[...rdPhotos,...(add.length?await uploadPhotos(add,id+'-'+Date.now().toString(36),btn):[])];btn.textContent='Opslaan…';
       await db.doc('reflecties/'+id).update(upd);
-      if(r&&r.group){const tid='morgen-'+id,t=tasks.find(x=>x.id===tid),nd=nextSchoolDay(upd.date);
-        if(upd.next&&t)await db.doc('tasks/'+tid).update({title:upd.next,...(upd.date!==r.date&&nd?{due:nd}:{})});
-        else if(upd.next&&!t&&nd)await db.collection('tasks').doc(tid).set({team:r.group,title:upd.next,who:'team',due:nd,kind:'taak',status:'open',created:Date.now(),fromRefl:id});
-        else if(!upd.next&&t)await db.doc('tasks/'+tid).delete();}
-      $('#reflDlg').close();reflEditing=null;setStatus('Voortgang bijgewerkt.');
+      if(r)await syncMorgenTask(id,{...r,...upd},r);
+      ok=true;setStatus('Voortgang bijgewerkt.');setTimeout(()=>{$('#reflDlg').close();reflEditing=null},700);
     }catch(err){$('#rdMsg').textContent='Opslaan lukte niet. Probeer het opnieuw.';writeFail(err)}
-    finally{btn.disabled=false;btn.textContent='Opslaan'}
+    finally{btnDone(btn,ok)}
   });
   $('#r-date').value=ymd(today());
   $('#reflForm').addEventListener('submit',async e=>{
     e.preventDefault();if(!db)return;const f=e.target,fd=new FormData(f);
     const who=fd.get('member')||'';const rec={member:who.startsWith('team:')?'':who,group:who.startsWith('team:')?who.slice(5):'',date:fd.get('date')||ymd(today()),done:(fd.get('done')||'').trim(),result:fd.get('result')||'',next:(fd.get('next')||'').trim(),at:Date.now()};
     if((!rec.member&&!rec.group)||!rec.done)return;
-    const btn=f.querySelector('button[type=submit]');btn.disabled=true;
+    const btn=f.querySelector('button[type=submit]');if(btn.disabled)return;btnBusy(btn,'Opslaan…');let ok=false;
     try{const rid=uid();const files=[...($('#r-photos').files||[])].slice(0,4);
-      if(files.length)rec.photos=await uploadPhotos(files,rid);
-      await db.collection('reflecties').doc(rid).set(rec);const ref={id:rid};
+      if(files.length)rec.photos=await uploadPhotos(files,rid,btn);
+      btn.textContent='Opslaan…';await db.collection('reflecties').doc(rid).set(rec);
       $('#r-photos').value='';$('#r-prev').innerHTML='';
-      if(rec.group&&rec.next){const nd=nextSchoolDay(rec.date);
-        if(nd)await db.collection('tasks').doc('morgen-'+ref.id).set({team:rec.group,title:rec.next,who:'team',due:nd,kind:'taak',status:'open',created:Date.now(),fromRefl:ref.id})}['done','next'].forEach(n=>f.querySelector('[name='+n+']').value='');f.querySelectorAll('[name=result]').forEach(r=>r.checked=false);setStatus(rec.group?'Groepsvoortgang voor team '+(rec.group==='ontwerp'?'Ontwerp':'Productie')+' opgeslagen.':'Voortgang van '+rec.member+' opgeslagen.')}
-    catch(err){writeFail(err)}finally{btn.disabled=!canWrite}
+      if(rec.next)await syncMorgenTask(rid,rec);
+      ['done','next'].forEach(n=>f.querySelector('[name='+n+']').value='');f.querySelectorAll('[name=result]').forEach(r=>r.checked=false);ok=true;
+      setStatus(rec.group?'Groepsvoortgang voor team '+(rec.group==='ontwerp'?'Ontwerp':'Productie')+' opgeslagen.':'Voortgang van '+rec.member+' opgeslagen.')}
+    catch(err){writeFail(err)}finally{btnDone(btn,ok)}
   });
+  /* ---------- opslaan-feedback en morgen-taak ---------- */
+  function btnBusy(btn,txt){btn.disabled=true;btn.dataset.label=btn.dataset.label||btn.textContent;btn.textContent=txt;btn.classList.remove('ok')}
+  function btnDone(btn,ok){const l=btn.dataset.label||'Opslaan';if(ok){btn.textContent='✓ Opgeslagen';btn.classList.add('ok');setTimeout(()=>{btn.textContent=l;btn.classList.remove('ok');btn.disabled=!canWrite},1600)}else{btn.textContent=l;btn.disabled=!canWrite}}
+  const memberTeam=name=>{const m=MEMBERS.find(x=>x.name===name);return m?(m.teams.length>1?'beide':m.teams[0]):'productie'};
+  async function syncMorgenTask(rid,rec,prev){
+    const tid='morgen-'+rid,t=tasks.find(x=>x.id===tid),nd=nextSchoolDay(rec.date);
+    const team=rec.group||memberTeam(rec.member),who=rec.group?'team':rec.member;
+    if(rec.next&&t)await db.doc('tasks/'+tid).update({title:rec.next,...(prev&&rec.date!==prev.date&&nd?{due:nd}:{})});
+    else if(rec.next&&!t&&nd)await db.collection('tasks').doc(tid).set({team,title:rec.next,who,due:nd,kind:'taak',status:'open',created:Date.now(),fromRefl:rid});
+    else if(!rec.next&&t)await db.doc('tasks/'+tid).delete();
+    return nd;
+  }
+
   /* ---------- foto's ---------- */
   let rdPhotos=[];
   function photoUrl(p){return `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${p}`}
@@ -885,9 +921,9 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       if(!r.ok)throw {code:r.status===401||r.status===403?'invalid_argument':'unavailable'};
     });queue=job.catch(()=>{});return job;
   }
-  async function uploadPhotos(files,baseId){
+  async function uploadPhotos(files,baseId,btn){
     const out=[];
-    for(let i=0;i<files.length;i++){setStatus(`Foto ${i+1} van ${files.length} uploaden…`);
+    for(let i=0;i<files.length;i++){const msg=`Foto ${i+1} van ${files.length} uploaden…`;setStatus(msg);if(btn)btn.textContent=msg;
       const blob=await resizeImage(files[i]);const path=`photos/${baseId}-${i+1}.jpg`;
       await putFile(path,await blobB64(blob),'Foto toegevoegd');out.push(path)}
     return out;
@@ -918,6 +954,9 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const sub=el('span');sub.style.display='block';
     if(last){sub.append('Laatste update '+fmtDate(last.date));if(last.result)sub.append(el('span','tagx '+last.result,last.result))}else sub.append('Nog geen voortgang ingevuld');
     rt.append(sub);ring.append(rt);box.append(ring);
+    const t0=ymd(today()),todayRefl=refl.find(r=>r.member===me&&!r.group&&r.date===t0);
+    if(todayRefl){const d=el('div','me-day done');d.append(el('span','ic','✓'),'Je update van vandaag staat erin.');box.append(d)}
+    else if(dayKind(t0)==='school'){const d=el('div','me-day todo');d.append(el('span','ic','!'),'Je hebt vandaag nog geen update gedaan.');box.append(d)}
     const open=mine.filter(t=>t.status!=='klaar').sort((a,b)=>(a.due||'9')<(b.due||'9')?-1:1);
     const doneL=mine.filter(t=>t.status==='klaar').sort((a,b)=>(b.doneAt||0)-(a.doneAt||0)).slice(0,2);
     const list=[...open.slice(0,6),...doneL];
@@ -936,9 +975,37 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         if(canWrite){tx.style.cursor='pointer';tx.title='Klik om te bewerken';tx.addEventListener('click',()=>openEdit(t.id))}
         li.append(cb,tx);ul.append(li)}
       box.append(ul)}
-    if(canWrite){const a=el('div','me-acts');const b=el('button','btn','+ Voortgang invullen');b.type='button';
-      b.addEventListener('click',()=>{location.hash='team';setTimeout(()=>{$('#r-member').value=me;$('#reflSection').scrollIntoView();$('#r-done').focus({preventScroll:true})},50)});a.append(b);box.append(a)}
+    if(canWrite){const a=el('div','me-acts');const b=el('button','btn',todayRefl?'Update van vandaag aanpassen':'Dag afsluiten');b.type='button';
+      b.addEventListener('click',()=>todayRefl?openReflEdit(todayRefl.id):openDay());a.append(b);box.append(a)}
+    else{const p=el('p','me-empty','Klik bovenaan op Bewerken met teamcode om af te vinken en je dag af te sluiten.');p.style.fontSize='13px';box.append(p)}
   }
+
+  /* ---------- Dag afsluiten ---------- */
+  function openDay(){
+    const me=getMe();if(!me||!canWrite)return;
+    $('#day-who').textContent=me+' · '+fmtDate(ymd(today()));$('#dayMsg').textContent='';
+    const nd=nextSchoolDay(ymd(today()));$('#day-next-hint').textContent=nd?'Wordt een taak voor jou op '+fmtDate(nd)+'.':'';
+    const d=$('#dayDlg');if(d.showModal)d.showModal();else d.setAttribute('open','');$('#day-done').focus();
+  }
+  $('#dayCancel').addEventListener('click',()=>$('#dayDlg').close());
+  $('#day-photos').addEventListener('change',()=>previewFiles($('#day-photos'),$('#day-prev')));
+  $('#dayForm').addEventListener('submit',async e=>{
+    e.preventDefault();const me=getMe();if(!db||!me)return;
+    const done=$('#day-done').value.trim();if(!done){$('#dayMsg').textContent='Vul in wat je vandaag hebt gedaan.';return}
+    const res=(document.querySelector('[name=dayres]:checked')||{}).value;if(!res){$('#dayMsg').textContent='Kies hoe het ging.';return}
+    const btn=$('#daySave');if(btn.disabled)return;btnBusy(btn,'Opslaan…');$('#dayMsg').textContent='';let ok=false;
+    const rec={member:me,group:'',date:ymd(today()),done,result:res,next:$('#day-next').value.trim(),at:Date.now()};
+    try{const rid=uid();const files=[...($('#day-photos').files||[])].slice(0,4);
+      if(files.length)rec.photos=await uploadPhotos(files,rid,btn);
+      btn.textContent='Opslaan…';await db.collection('reflecties').doc(rid).set(rec);
+      if(rec.next)await syncMorgenTask(rid,rec);
+      ok=true;setStatus('Je dag is afgesloten. Goed gedaan!');
+      setTimeout(()=>{$('#dayDlg').close();['day-done','day-next'].forEach(id=>$('#'+id).value='');$('#day-photos').value='';$('#day-prev').innerHTML='';document.querySelectorAll('[name=dayres]').forEach(x=>x.checked=false)},900);
+    }catch(err){$('#dayMsg').textContent='Opslaan lukte niet. Controleer je internet en probeer opnieuw.';writeFail(err)}
+    finally{btnDone(btn,ok)}
+  });
+  function presetMember(){const me=getMe(),sel=$('#r-member');if(me&&sel&&!sel.value)sel.value=me}
+  presetMember();$('#meSel').addEventListener('change',presetMember);
 
   /* ---------- Wat er gebeurt ---------- */
   const SEENKEY='hs-seen';let seenBefore=0,feedLimit=8;
@@ -1290,6 +1357,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   setStatus('Planning laden…');
   refresh();
   setInterval(()=>{if(!document.hidden)refresh(true);updateSync()},120000);
+  $('#btnRefresh').addEventListener('click',async()=>{const b=$('#btnRefresh');if(b.disabled)return;b.disabled=true;b.textContent='↻ Verversen…';
+    await refresh(true);b.textContent='✓ Bijgewerkt';setTimeout(()=>{b.textContent='↻ Ververs';b.disabled=false},1500)});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastSync>30000)refresh(true)});
 })();
 </script>
