@@ -246,8 +246,8 @@ textarea{resize:vertical;min-height:64px}
 .readonly .goal{field-sizing:content;overflow:hidden}
 .status:empty{display:none}
 
-#editDlg{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface);color:var(--fg);width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
-#editDlg::backdrop{background:rgba(20,24,21,.45)}
+#reflDlg,#editDlg{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface);color:var(--fg);width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+#reflDlg::backdrop,#editDlg::backdrop{background:rgba(20,24,21,.45)}
 #editForm{display:grid;gap:12px;padding:20px}
 .ed-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ed-who{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0}
@@ -265,6 +265,18 @@ textarea{resize:vertical;min-height:64px}
 .dt-txt.can:hover .dt-t{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
 .readonly .edit{display:none!important}
 @media (max-width:480px){.ed-row{grid-template-columns:1fr}}
+
+.tv-grid{columns:250px;column-gap:10px}
+.tv{break-inside:avoid;margin-bottom:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px;align-content:start;min-width:0}
+.tv-head{display:flex;align-items:center;gap:10px}
+.tv-head .avatar{width:30px;height:30px;font-size:13px}
+.tv-head h3{font-size:16px;flex:1;min-width:0}
+.tv-bar{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;font:12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.tv-bar .bar{height:6px}
+.tv-line{font-size:13.5px;margin:0;overflow-wrap:anywhere}
+.tv-line b{font:500 10px var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:1px}
+.tv-none{font-size:13px;color:var(--muted);margin:0}
+.tv-date{font:11px var(--f-mono);color:var(--muted)}
 
 details.rules{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
 details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:17px}
@@ -318,6 +330,11 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     </div>
     <p class="weekhint" id="weekHint">Taak klaar? Vink het hokje aan in het blokje van die dag.</p>
     <div class="weeks" id="weeks"></div>
+  </section>
+
+  <section aria-labelledby="tvTitle" style="display:grid;gap:14px">
+    <div class="team-head"><h2 id="tvTitle">Teamleden</h2><span class="muted" style="font-size:13px">Laatste voortgang en wat iedereen de volgende keer doet</span></div>
+    <div class="tv-grid" id="teamView"></div>
   </section>
 
   <section class="meters" aria-label="Voortgang">
@@ -413,23 +430,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     </ul>
   </details>
 
-  <dialog id="editDlg" aria-labelledby="edTitle">
-    <form id="editForm" class="nolock" method="dialog">
-      <h3 id="edTitle">Taak bewerken</h3>
-      <div class="field"><label for="ed-title">Taak</label><textarea id="ed-title" name="title" required maxlength="300" rows="2"></textarea></div>
-      <div class="ed-row">
-        <div class="field"><label for="ed-team">Team</label><select id="ed-team" name="team"><option value="ontwerp">Ontwerp</option><option value="productie">Productie</option><option value="beide">Beide teams</option></select></div>
-        <div class="field"><label for="ed-status">Status</label><select id="ed-status" name="status"><option value="open">Open</option><option value="bezig">Bezig</option><option value="klaar">Klaar</option></select></div>
-      </div>
-      <div class="ed-row">
-        <div class="field"><label for="ed-kind">Soort</label><select id="ed-kind" name="kind"><option value="taak">Taak (werk op die dag)</option><option value="deadline">Deadline (moet dan af)</option></select></div>
-        <div class="field"><label for="ed-due">Datum</label><input id="ed-due" name="due" type="date"></div>
-      </div>
-      <fieldset class="ed-who"><legend>Wie</legend><label class="ed-all"><input type="checkbox" id="ed-all"> Hele team</label><div id="ed-whoList"></div></fieldset>
-      <p id="edMsg" class="status err" style="margin:0"></p>
-      <div class="ed-actions"><button class="btn" type="submit" id="edSave">Opslaan</button><button class="linkbtn" type="button" id="edCancel">Annuleren</button></div>
-    </form>
-  </dialog>
+
 
   <details class="rules nolock" id="beheer">
     <summary>Beheer (alleen voor Faith)</summary>
@@ -472,6 +473,41 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   </div>
 </div>
 
+  <dialog id="editDlg" aria-labelledby="edTitle">
+    <form id="editForm" class="nolock" method="dialog">
+      <h3 id="edTitle">Taak bewerken</h3>
+      <div class="field"><label for="ed-title">Taak</label><textarea id="ed-title" name="title" required maxlength="300" rows="2"></textarea></div>
+      <div class="ed-row">
+        <div class="field"><label for="ed-team">Team</label><select id="ed-team" name="team"><option value="ontwerp">Ontwerp</option><option value="productie">Productie</option><option value="beide">Beide teams</option></select></div>
+        <div class="field"><label for="ed-status">Status</label><select id="ed-status" name="status"><option value="open">Open</option><option value="bezig">Bezig</option><option value="klaar">Klaar</option></select></div>
+      </div>
+      <div class="ed-row">
+        <div class="field"><label for="ed-kind">Soort</label><select id="ed-kind" name="kind"><option value="taak">Taak (werk op die dag)</option><option value="deadline">Deadline (moet dan af)</option></select></div>
+        <div class="field"><label for="ed-due">Datum</label><input id="ed-due" name="due" type="date"></div>
+      </div>
+      <fieldset class="ed-who"><legend>Wie</legend><label class="ed-all"><input type="checkbox" id="ed-all"> Hele team</label><div id="ed-whoList"></div></fieldset>
+      <p id="edMsg" class="status err" style="margin:0"></p>
+      <div class="ed-actions"><button class="btn" type="submit" id="edSave">Opslaan</button><button class="linkbtn" type="button" id="edCancel">Annuleren</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="reflDlg" aria-labelledby="rdTitle">
+    <form id="reflEditForm" class="nolock" method="dialog" style="display:grid;gap:12px;padding:20px">
+      <h3 id="rdTitle">Voortgang bewerken</h3>
+      <p class="muted" id="rd-who" style="margin:-6px 0 0;font-size:14px"></p>
+      <div class="field"><label for="rd-date">Datum</label><input id="rd-date" type="date" required></div>
+      <div class="field"><label for="rd-done">Wat je hebt gedaan vandaag</label><textarea id="rd-done" required maxlength="800" rows="3"></textarea></div>
+      <div class="field"><span class="flabel" id="rd-res-l">Hoe het ging</span>
+        <div class="seg" role="radiogroup" aria-labelledby="rd-res-l">
+          <label class="ok"><input type="radio" name="rdres" value="geslaagd"> Geslaagd</label>
+          <label class="mid"><input type="radio" name="rdres" value="onderweg"> Onderweg</label>
+          <label class="bad"><input type="radio" name="rdres" value="mislukt"> Mislukt</label>
+        </div></div>
+      <div class="field"><label for="rd-next">Wat je morgen gaat doen</label><textarea id="rd-next" maxlength="600" rows="2"></textarea></div>
+      <p id="rdMsg" class="status err" style="margin:0"></p>
+      <div class="ed-actions"><button class="btn" type="submit" id="rdSave">Opslaan</button><button class="linkbtn" type="button" id="rdCancel">Annuleren</button></div>
+    </form>
+  </dialog>
 <script>
 (function(){
   const $=s=>document.querySelector(s);
@@ -591,7 +627,28 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   const whoList=w=>(w||'').toLowerCase().split(/\s*(?:,|&|\/|\+|\ben\b)\s*/).map(x=>x.trim()).filter(Boolean);
   const tasksOf=name=>{const m=MEMBERS.find(x=>x.name===name);return tasks.filter(t=>whoList(t.who).includes(name.toLowerCase())||(t.who==='team'&&m&&(t.team==='beide'||m.teams.includes(t.team))))};
   const statusRank={bezig:0,open:1,klaar:2};
+  function renderTeamView(){
+    const box=$('#teamView');if(!box)return;box.innerHTML='';
+    for(const m of MEMBERS){
+      const mine=tasksOf(m.name), done=mine.filter(t=>t.status==='klaar').length;
+      const last=refl.filter(r=>r.member===m.name&&!r.group).sort(byDate)[0];
+      const card=el('article','tv');
+      const head=el('div','tv-head');
+      const av=el('div','avatar '+(m.teams.length>1?'beide':m.teams[0]),m.name[0]);av.setAttribute('aria-hidden','true');
+      head.append(av,el('h3',null,m.name));
+      if(last&&last.result)head.append(el('span','res '+last.result,last.result.charAt(0).toUpperCase()+last.result.slice(1)));
+      card.append(head);
+      const tb=el('div','tv-bar');const bar=el('div','bar'+(mine.length&&done===mine.length?' ok':''));const i=el('i');if(m.teams.length===1&&m.teams[0]==='ontwerp')i.style.background='var(--ontwerp)';i.style.width=(mine.length?done/mine.length*100:0)+'%';bar.append(i);
+      tb.append(bar,el('span',null,mine.length?`${done}/${mine.length} taken klaar`:'geen taken'));card.append(tb);
+      if(last){
+        if(last.done){const p=el('p','tv-line');p.append(el('b',null,'Gedaan · '+fmtDate(last.date)),last.done);card.append(p)}
+        const p2=el('p','tv-line');p2.append(el('b',null,'Volgende keer'),last.next||'Nog niet ingevuld');if(!last.next)p2.style.color='var(--muted)';card.append(p2);
+      }else card.append(el('p','tv-none','Nog geen voortgang ingevuld.'));
+      box.append(card);
+    }
+  }
   function renderTeam(){
+    renderTeamView();
     const sum=$('#teamSummary');sum.innerHTML='';
     for(const team of ['ontwerp','productie']){
       const ts=tasks.filter(t=>inTeam(t,team)), done=ts.filter(t=>t.status==='klaar').length;
@@ -649,6 +706,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       clearTimeout(timer);if(db){db.doc('reflecties/'+r.id).delete().catch(writeFail);if(r.group)db.doc('tasks/morgen-'+r.id).delete().catch(()=>{})}});
     return del;
   }
+  function editBtn(r){const b=el('button','edit','Bewerk');b.type='button';b.addEventListener('click',()=>openReflEdit(r.id));return b}
   const byDate=(a,b)=>(b.date||'').localeCompare(a.date||'')||(b.at||0)-(a.at||0);
   function reflBlock(m){return reflView(refl.filter(r=>r.member===m.name&&!r.group).sort(byDate),m.name,'Voortgang')}
   function teamReflBlock(team){return reflView(refl.filter(r=>r.group===team).sort(byDate),'team:'+team,'Groepsvoortgang')}
@@ -662,9 +720,9 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     head.append(acts);box.append(head);
     if(!mine.length){box.append(el('p','none',target.startsWith('team:')?'Nog geen groepsvoortgang ingevuld.':'Nog niets ingevuld.'));return box}
     box.append(reflDl(mine[0]));
-    if(canWrite){const a=el('div');a.style.textAlign='right';a.append(delBtn(mine[0]));box.append(a)}
+    if(canWrite){const a=el('div');a.style.cssText='display:flex;justify-content:flex-end;gap:4px';a.append(editBtn(mine[0]),delBtn(mine[0]));box.append(a)}
     if(mine.length>1){const d=el('details');d.append(el('summary',null,`Eerdere updates (${mine.length-1})`));const old=el('div','old');
-      for(const r of mine.slice(1)){const w=el('div');w.style.display='grid';w.style.gap='4px';const h=el('div','refl-head');h.append(el('span','rdate',fmtDate(r.date)));if(canWrite)h.append(delBtn(r));w.append(h,reflDl(r));old.append(w)}
+      for(const r of mine.slice(1)){const w=el('div');w.style.display='grid';w.style.gap='4px';const h=el('div','refl-head');h.append(el('span','rdate',fmtDate(r.date)));if(canWrite){const a=el('div');a.style.cssText='display:flex;gap:4px';a.append(editBtn(r),delBtn(r));h.append(a)}w.append(h,reflDl(r));old.append(w)}
       d.append(old);box.append(d)}
     return box;
   }
@@ -674,6 +732,31 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const gm=el('optgroup');gm.label='Eén teamlid';MEMBERS.forEach(m=>{const o=el('option',null,m.name);o.value=m.name;gm.append(o)});
     sel.append(g,gm)})();
   function nextSchoolDay(from){const d=parseDate(from);for(let i=1;i<=14;i++){d.setDate(d.getDate()+1);const x=ymd(d);if(x>END)return null;if(dayKind(x)==='school')return x}return null}
+  let reflEditing=null;
+  function openReflEdit(id){
+    const r=refl.find(x=>x.id===id);if(!r||!canWrite)return;reflEditing=id;
+    $('#rd-who').textContent=r.group?'Team '+(r.group==='ontwerp'?'Ontwerp':'Productie'):r.member;
+    $('#rd-date').value=r.date||'';$('#rd-done').value=r.done||'';$('#rd-next').value=r.next||'';$('#rdMsg').textContent='';
+    document.querySelectorAll('[name=rdres]').forEach(x=>x.checked=x.value===r.result);
+    const d=$('#reflDlg');if(d.showModal)d.showModal();else d.setAttribute('open','');$('#rd-done').focus();
+  }
+  $('#rdCancel').addEventListener('click',()=>{reflEditing=null;$('#reflDlg').close()});
+  $('#reflEditForm').addEventListener('submit',async e=>{
+    e.preventDefault();if(!reflEditing||!db)return;const id=reflEditing,r=refl.find(x=>x.id===id);
+    const done=$('#rd-done').value.trim();if(!done){$('#rdMsg').textContent='Vul in wat er gedaan is.';return}
+    const res=(document.querySelector('[name=rdres]:checked')||{}).value||'';
+    const upd={date:$('#rd-date').value||r.date,done,result:res,next:$('#rd-next').value.trim()};
+    const btn=$('#rdSave');btn.disabled=true;btn.textContent='Opslaan…';
+    try{
+      await db.doc('reflecties/'+id).update(upd);
+      if(r&&r.group){const tid='morgen-'+id,t=tasks.find(x=>x.id===tid),nd=nextSchoolDay(upd.date);
+        if(upd.next&&t)await db.doc('tasks/'+tid).update({title:upd.next,...(upd.date!==r.date&&nd?{due:nd}:{})});
+        else if(upd.next&&!t&&nd)await db.collection('tasks').doc(tid).set({team:r.group,title:upd.next,who:'team',due:nd,kind:'taak',status:'open',created:Date.now(),fromRefl:id});
+        else if(!upd.next&&t)await db.doc('tasks/'+tid).delete();}
+      $('#reflDlg').close();reflEditing=null;setStatus('Voortgang bijgewerkt.');
+    }catch(err){$('#rdMsg').textContent='Opslaan lukte niet. Probeer het opnieuw.';writeFail(err)}
+    finally{btn.disabled=false;btn.textContent='Opslaan'}
+  });
   $('#r-date').value=ymd(today());
   $('#reflForm').addEventListener('submit',async e=>{
     e.preventDefault();if(!db)return;const f=e.target,fd=new FormData(f);
