@@ -6,6 +6,8 @@ Gedeelde planning voor de casus *Hangende sculptuur (asymmetrisch)*: weekplannin
 
 - **Kijken** kan iedereen, zonder account.
 - **Bewerken** kan iedereen met de **teamcode**: klik bovenaan op *Bewerken met teamcode*. Wijzigingen staan direct online (soms na een minuutje).
+- **Mijn pagina**: kies je naam en zie je eigen taken en voortgang. **Wat er gebeurt** laat zien wat er nieuw is sinds je laatste bezoek.
+- **Foto's** bij voortgang worden verkleind en in de map `photos/` gezet. De repository is openbaar: zet er geen gezichten of persoonlijke dingen op.
 
 ## Hoe het werkt
 Alle gegevens staan in `data.json`. De website slaat wijzigingen op met een GitHub-sleutel van Faith. Die sleutel staat versleuteld in `secret.json` en gaat alleen open met de teamcode. Elke wijziging is een commit, dus alles is terug te zetten via de geschiedenis van `data.json`.
@@ -25,4 +27,5 @@ Alle gegevens staan in `data.json`. De website slaat wijzigingen op met een GitH
 - `index.html` – de website
 - `data.json` – alle planningsgegevens (wordt door de website bijgewerkt)
 - `secret.json` – versleutelde sleutel (wordt door Beheer aangemaakt)
+- `photos/` – foto's bij voortgang (wordt door de website gevuld)
 - `tools/sync.py` – oud hulpscript om gegevens uit de Claude-versie over te zetten
