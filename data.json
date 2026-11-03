@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T09:57:06.885Z",
+ "updatedAt": "2026-11-03T09:57:10.948Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -16,7 +16,7 @@
    "created": 1793232300001,
    "due": "2026-10-29",
    "kind": "taak",
-   "status": "open",
+   "status": "bezig",
    "team": "productie",
    "title": "Uitzoeken hoe we de verbindingen in Grasshopper en Rhino maken",
    "who": "Faith, Edgar, Dora, Renske, Ilse"
