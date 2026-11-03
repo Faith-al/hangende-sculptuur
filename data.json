@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T10:05:37.000Z",
+ "updatedAt": "2026-11-03T10:05:55.487Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -70,7 +70,7 @@
    "who": "team",
    "due": "2026-10-30",
    "kind": "deadline",
-   "status": "bezig",
+   "status": "klaar",
    "created": 1793700328477
   }
  ],
