@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T09:21:53.050Z",
+ "updatedAt": "2026-11-03T09:56:42.646Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -24,7 +24,7 @@
   {
    "id": "morgen-02trk76dw9o31dkcl6s2",
    "created": 1793291200000,
-   "due": "2026-10-30",
+   "due": "2026-11-04",
    "fromRefl": "02trk76dw9o31dkcl6s2",
    "kind": "taak",
    "status": "open",
