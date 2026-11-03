@@ -1,4 +1,5 @@
 {
+ "updatedAt": "2026-11-03T09:21:39.471Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -26,7 +27,7 @@
    "due": "2026-10-30",
    "fromRefl": "02trk76dw9o31dkcl6s2",
    "kind": "taak",
-   "status": "open",
+   "status": "bezig",
    "team": "ontwerp",
    "title": "bespreken welke concept ze gaan doen",
    "who": ""
@@ -107,20 +108,6 @@
    "title": "Start 3D-printen (Productie)"
   }
  ],
- "weeks": {
-  "w44": {
-   "goal": "Voorstel: kokers meten (binnen- en buitendiameter), schetsen van de asymmetrische compositie, eerste knoopconcept."
-  },
-  "w45": {
-   "goal": "Ontwerp: concept knoop klaar op donderdag 5 nov. Productie: printer en instellingen voorbereiden, testprint als het concept binnen is."
-  },
-  "w46": {
-   "goal": "Woensdag 11 nov start het 3D-printen. Doel: minimaal 5 knopen geprint, presentatie voorbereiden."
-  },
-  "w47": {
-   "goal": "Voorstel: resterende knopen printen (casus 3), sculptuur opbouwen en veilig ophangen vóór vrijdag 20 nov."
-  }
- },
  "log": [],
  "reflecties": [
   {
@@ -164,10 +151,23 @@
    "result": "onderweg"
   }
  ],
+ "weeks": {
+  "w44": {
+   "goal": "Voorstel: kokers meten (binnen- en buitendiameter), schetsen van de asymmetrische compositie, eerste knoopconcept."
+  },
+  "w45": {
+   "goal": "Ontwerp: concept knoop klaar op donderdag 5 nov. Productie: printer en instellingen voorbereiden, testprint als het concept binnen is."
+  },
+  "w46": {
+   "goal": "Woensdag 11 nov start het 3D-printen. Doel: minimaal 5 knopen geprint, presentatie voorbereiden."
+  },
+  "w47": {
+   "goal": "Voorstel: resterende knopen printen (casus 3), sculptuur opbouwen en veilig ophangen vóór vrijdag 20 nov."
+  }
+ },
  "teller": {
   "knopenGeprint": 0,
   "knopenTotaal": 0,
   "kokers": 0
- },
- "updatedAt": "2026-10-29T16:27:18+00:00"
+ }
 }
