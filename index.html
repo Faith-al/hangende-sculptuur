@@ -250,6 +250,9 @@ textarea{resize:vertical;min-height:64px}
 .ed-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ed-who{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0}
 .ed-who legend{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 4px}
+
+.ed-all{display:flex;gap:6px;align-items:center;font-weight:600;font-size:14px;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+#ed-whoList.off{opacity:.45}
 #ed-whoList{display:flex;flex-wrap:wrap;gap:6px 14px}
 #ed-whoList label{display:flex;gap:5px;align-items:center;font-size:14px}
 .ed-actions{display:flex;gap:8px}
@@ -420,7 +423,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         <div class="field"><label for="ed-kind">Soort</label><select id="ed-kind" name="kind"><option value="taak">Taak (werk op die dag)</option><option value="deadline">Deadline (moet dan af)</option></select></div>
         <div class="field"><label for="ed-due">Datum</label><input id="ed-due" name="due" type="date"></div>
       </div>
-      <fieldset class="ed-who"><legend>Wie (leeg = hele team)</legend><div id="ed-whoList"></div></fieldset>
+      <fieldset class="ed-who"><legend>Wie</legend><label class="ed-all"><input type="checkbox" id="ed-all"> Hele team</label><div id="ed-whoList"></div></fieldset>
       <p id="edMsg" class="status err" style="margin:0"></p>
       <div class="ed-actions"><button class="btn" type="submit" id="edSave">Opslaan</button><button class="linkbtn" type="button" id="edCancel">Annuleren</button></div>
     </form>
@@ -532,7 +535,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
           db.doc('tasks/'+t.id).update({status:cb.checked?'klaar':'open'}).catch(e=>{cb.checked=!cb.checked;li.classList.toggle('done',cb.checked);cb.disabled=false;writeFail(e)})});
         const txt=el('div','dt-txt'+(canWrite?' can':''));txt.append(el('span','dt-t',t.title));
         if(canWrite){txt.tabIndex=0;txt.setAttribute('role','button');txt.title='Klik om te bewerken';txt.addEventListener('click',()=>openEdit(t.id));txt.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openEdit(t.id)}})}
-        txt.append(el('span','dt-m',(kd==='taak'?'Taak · ':'Deadline · ')+(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.who?' · '+t.who:'')+(t.status==='bezig'?' · bezig':t.status==='klaar'?' · klaar':'')));
+        txt.append(el('span','dt-m',(kd==='taak'?'Taak · ':'Deadline · ')+(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.who?' · '+whoLabel(t.who):'')+(t.status==='bezig'?' · bezig':t.status==='klaar'?' · klaar':'')));
         li.append(cb,txt);ul.append(li)}
       c.append(ul)}
   }
@@ -576,11 +579,13 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     {name:'Edgar',teams:['productie']},{name:'Emirhan',teams:['ontwerp']},{name:'Esmay',teams:['ontwerp']},
     {name:'Ilse',teams:['productie']},{name:'Lieke',teams:['productie']},{name:'Renske',teams:['productie']},{name:'Sem',teams:['productie']}];
   document.querySelectorAll('select[data-who]').forEach(sel=>{
-    const t=sel.dataset.who;const first=el('option',null,t==='all'||t==='comm'?'Kies naam':'Niemand / hele team');first.value='';sel.append(first);
+    const t=sel.dataset.who;const first=el('option',null,t==='all'||t==='comm'?'Kies naam':'Nog niemand');first.value='';sel.append(first);
+    if(t==='ontwerp'||t==='productie'){const o=el('option',null,'Hele team');o.value='team';sel.append(o)}
     MEMBERS.filter(m=>t==='all'||(t==='comm'?m.comm:m.teams.includes(t))).forEach(m=>{const o=el('option',null,m.name);o.value=m.name;sel.append(o)});
   });
+  const whoLabel=w=>w==='team'?'Hele team':(w||'');
   const whoList=w=>(w||'').toLowerCase().split(/\s*(?:,|&|\/|\+|\ben\b)\s*/).map(x=>x.trim()).filter(Boolean);
-  const tasksOf=name=>tasks.filter(t=>whoList(t.who).includes(name.toLowerCase()));
+  const tasksOf=name=>{const m=MEMBERS.find(x=>x.name===name);return tasks.filter(t=>whoList(t.who).includes(name.toLowerCase())||(t.who==='team'&&m&&m.teams.includes(t.team)))};
   const statusRank={bezig:0,open:1,klaar:2};
   function renderTeam(){
     const sum=$('#teamSummary');sum.innerHTML='';
@@ -673,7 +678,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const btn=f.querySelector('button[type=submit]');btn.disabled=true;
     try{const ref=await db.collection('reflecties').add(rec);
       if(rec.group&&rec.next){const nd=nextSchoolDay(rec.date);
-        if(nd)await db.collection('tasks').doc('morgen-'+ref.id).set({team:rec.group,title:rec.next,who:'',due:nd,kind:'taak',status:'open',created:Date.now(),fromRefl:ref.id})}['done','next'].forEach(n=>f.querySelector('[name='+n+']').value='');f.querySelectorAll('[name=result]').forEach(r=>r.checked=false);setStatus(rec.group?'Groepsvoortgang voor team '+(rec.group==='ontwerp'?'Ontwerp':'Productie')+' opgeslagen.':'Voortgang van '+rec.member+' opgeslagen.')}
+        if(nd)await db.collection('tasks').doc('morgen-'+ref.id).set({team:rec.group,title:rec.next,who:'team',due:nd,kind:'taak',status:'open',created:Date.now(),fromRefl:ref.id})}['done','next'].forEach(n=>f.querySelector('[name='+n+']').value='');f.querySelectorAll('[name=result]').forEach(r=>r.checked=false);setStatus(rec.group?'Groepsvoortgang voor team '+(rec.group==='ontwerp'?'Ontwerp':'Productie')+' opgeslagen.':'Voortgang van '+rec.member+' opgeslagen.')}
     catch(err){writeFail(err)}finally{btn.disabled=!canWrite}
   });
   function showTab(){
@@ -693,15 +698,17 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const t=tasks.find(x=>x.id===id);if(!t||!canWrite)return;editingId=id;
     $('#ed-title').value=t.title||'';$('#ed-team').value=t.team||'ontwerp';$('#ed-status').value=t.status||'open';
     $('#ed-kind').value=t.kind==='taak'?'taak':'deadline';$('#ed-due').value=t.due||'';$('#edMsg').textContent='';
-    fillWho($('#ed-team').value,whoList(t.who));
+    $('#ed-all').checked=t.who==='team';fillWho($('#ed-team').value,t.who==='team'?[]:whoList(t.who));syncAll();
     const d=$('#editDlg');if(d.showModal)d.showModal();else d.setAttribute('open','');$('#ed-title').focus();
   }
-  $('#ed-team').addEventListener('change',()=>{const keep=[...document.querySelectorAll('#ed-whoList input:checked')].map(c=>c.value.toLowerCase());fillWho($('#ed-team').value,keep)});
+  function syncAll(){const on=$('#ed-all').checked;$('#ed-whoList').classList.toggle('off',on);document.querySelectorAll('#ed-whoList input').forEach(c=>{c.disabled=on;if(on)c.checked=false})}
+  $('#ed-all').addEventListener('change',syncAll);
+  $('#ed-team').addEventListener('change',()=>{const keep=[...document.querySelectorAll('#ed-whoList input:checked')].map(c=>c.value.toLowerCase());fillWho($('#ed-team').value,keep);syncAll()});
   $('#edCancel').addEventListener('click',()=>{editingId=null;$('#editDlg').close()});
   $('#editForm').addEventListener('submit',async e=>{
     e.preventDefault();if(!editingId||!db)return;
     const title=$('#ed-title').value.trim();if(!title){$('#edMsg').textContent='Vul een naam voor de taak in.';return}
-    const who=[...document.querySelectorAll('#ed-whoList input:checked')].map(c=>c.value).join(', ');
+    const who=$('#ed-all').checked?'team':[...document.querySelectorAll('#ed-whoList input:checked')].map(c=>c.value).join(', ');
     const upd={title,team:$('#ed-team').value,status:$('#ed-status').value,kind:$('#ed-kind').value,due:$('#ed-due').value||'',who};
     const btn=$('#edSave');btn.disabled=true;btn.textContent='Opslaan…';
     try{await db.doc('tasks/'+editingId).update(upd);$('#editDlg').close();editingId=null;setStatus('Taak bijgewerkt.')}
@@ -775,7 +782,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         pill.addEventListener('click',()=>{if(db)db.doc('tasks/'+t.id).update({status:NEXT[t.status]||'open'}).catch(writeFail)});
         const body=el('div','t-body');body.append(el('span','t-title',t.title));
         const meta=el('div','t-meta');
-        if(t.who)meta.append(el('span',null,t.who));
+        if(t.who)meta.append(el('span',null,whoLabel(t.who)));
         if(t.due){const d=daysTo(t.due);const s=el('span',d<0&&t.status!=='klaar'?'late':null,(d<0&&t.status!=='klaar'?(t.kind==='taak'?'niet afgerond · ':'te laat · '):'')+(t.kind==='taak'?'Taak op ':'Deadline ')+fmtDate(t.due));meta.append(s);const k=dayKind(t.due);if(k==='leerplek'||k==='weekend')meta.append(el('span','lp',k==='leerplek'?'leerplekdag':'weekend'))}
         if(meta.childNodes.length)body.append(meta);
         const del=el('button','del','Verwijder');del.type='button';del.disabled=!canWrite;

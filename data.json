@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T09:57:44.961Z",
+ "updatedAt": "2026-11-03T09:59:43+00:00",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -30,7 +30,7 @@
    "status": "open",
    "team": "ontwerp",
    "title": "bespreken welke concept ze gaan doen",
-   "who": ""
+   "who": "team"
   },
   {
    "id": "morgen-c4g18cbrusjmdtd6fk72",
@@ -41,7 +41,7 @@
    "status": "open",
    "team": "productie",
    "title": "ze gaan de grotere printer testen om te zien wat de verschillen tussen de machines zijn, Verder met grashopper en sketchup testen om alvast makkelijk een model te maken.",
-   "who": ""
+   "who": "team"
   },
   {
    "id": "start-printen",
