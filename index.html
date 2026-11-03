@@ -244,6 +244,23 @@ textarea{resize:vertical;min-height:64px}
 .readonly .goal{field-sizing:content;overflow:hidden}
 .status:empty{display:none}
 
+#editDlg{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface);color:var(--fg);width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+#editDlg::backdrop{background:rgba(20,24,21,.45)}
+#editForm{display:grid;gap:12px;padding:20px}
+.ed-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ed-who{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0}
+.ed-who legend{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 4px}
+#ed-whoList{display:flex;flex-wrap:wrap;gap:6px 14px}
+#ed-whoList label{display:flex;gap:5px;align-items:center;font-size:14px}
+.ed-actions{display:flex;gap:8px}
+.edit{border:0;background:none;color:var(--muted);font-size:13px;padding:2px 4px;border-radius:4px;cursor:pointer}
+.edit:hover,.del:hover{color:var(--fg)}
+.task .acts{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.dt-txt.can{cursor:pointer;border-radius:4px}
+.dt-txt.can:hover .dt-t{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+.readonly .edit{display:none!important}
+@media (max-width:480px){.ed-row{grid-template-columns:1fr}}
+
 details.rules{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
 details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:17px}
 .rules ul{margin:12px 0 0;padding-left:20px;display:grid;gap:4px;max-width:70ch}
@@ -391,6 +408,24 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     </ul>
   </details>
 
+  <dialog id="editDlg" aria-labelledby="edTitle">
+    <form id="editForm" class="nolock" method="dialog">
+      <h3 id="edTitle">Taak bewerken</h3>
+      <div class="field"><label for="ed-title">Taak</label><textarea id="ed-title" name="title" required maxlength="300" rows="2"></textarea></div>
+      <div class="ed-row">
+        <div class="field"><label for="ed-team">Team</label><select id="ed-team" name="team"><option value="ontwerp">Ontwerp</option><option value="productie">Productie</option></select></div>
+        <div class="field"><label for="ed-status">Status</label><select id="ed-status" name="status"><option value="open">Open</option><option value="bezig">Bezig</option><option value="klaar">Klaar</option></select></div>
+      </div>
+      <div class="ed-row">
+        <div class="field"><label for="ed-kind">Soort</label><select id="ed-kind" name="kind"><option value="taak">Taak (werk op die dag)</option><option value="deadline">Deadline (moet dan af)</option></select></div>
+        <div class="field"><label for="ed-due">Datum</label><input id="ed-due" name="due" type="date"></div>
+      </div>
+      <fieldset class="ed-who"><legend>Wie (leeg = hele team)</legend><div id="ed-whoList"></div></fieldset>
+      <p id="edMsg" class="status err" style="margin:0"></p>
+      <div class="ed-actions"><button class="btn" type="submit" id="edSave">Opslaan</button><button class="linkbtn" type="button" id="edCancel">Annuleren</button></div>
+    </form>
+  </dialog>
+
   <details class="rules nolock" id="beheer">
     <summary>Beheer (alleen voor Faith)</summary>
     <form id="setupForm" class="nolock" style="display:grid;gap:10px;margin-top:12px;max-width:560px">
@@ -495,7 +530,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         cb.setAttribute('aria-label','Klaar: '+t.title);
         cb.addEventListener('change',()=>{if(!db||!canWrite)return;cb.disabled=true;li.classList.toggle('done',cb.checked);
           db.doc('tasks/'+t.id).update({status:cb.checked?'klaar':'open'}).catch(e=>{cb.checked=!cb.checked;li.classList.toggle('done',cb.checked);cb.disabled=false;writeFail(e)})});
-        const txt=el('div','dt-txt');txt.append(el('span','dt-t',t.title));
+        const txt=el('div','dt-txt'+(canWrite?' can':''));txt.append(el('span','dt-t',t.title));
+        if(canWrite){txt.tabIndex=0;txt.setAttribute('role','button');txt.title='Klik om te bewerken';txt.addEventListener('click',()=>openEdit(t.id));txt.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openEdit(t.id)}})}
         txt.append(el('span','dt-m',(kd==='taak'?'Taak · ':'Deadline · ')+(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.who?' · '+t.who:'')+(t.status==='bezig'?' · bezig':t.status==='klaar'?' · klaar':'')));
         li.append(cb,txt);ul.append(li)}
       c.append(ul)}
@@ -647,6 +683,33 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   }
   window.addEventListener('hashchange',showTab);showTab();
 
+  /* taak bewerken */
+  let editingId=null;
+  function fillWho(team,selected){
+    const box=$('#ed-whoList');box.innerHTML='';
+    MEMBERS.filter(m=>m.teams.includes(team)).forEach(m=>{const l=el('label');const c=el('input');c.type='checkbox';c.value=m.name;c.name='who';c.checked=selected.includes(m.name.toLowerCase());l.append(c,m.name);box.append(l)});
+  }
+  function openEdit(id){
+    const t=tasks.find(x=>x.id===id);if(!t||!canWrite)return;editingId=id;
+    $('#ed-title').value=t.title||'';$('#ed-team').value=t.team||'ontwerp';$('#ed-status').value=t.status||'open';
+    $('#ed-kind').value=t.kind==='taak'?'taak':'deadline';$('#ed-due').value=t.due||'';$('#edMsg').textContent='';
+    fillWho($('#ed-team').value,whoList(t.who));
+    const d=$('#editDlg');if(d.showModal)d.showModal();else d.setAttribute('open','');$('#ed-title').focus();
+  }
+  $('#ed-team').addEventListener('change',()=>{const keep=[...document.querySelectorAll('#ed-whoList input:checked')].map(c=>c.value.toLowerCase());fillWho($('#ed-team').value,keep)});
+  $('#edCancel').addEventListener('click',()=>{editingId=null;$('#editDlg').close()});
+  $('#editForm').addEventListener('submit',async e=>{
+    e.preventDefault();if(!editingId||!db)return;
+    const title=$('#ed-title').value.trim();if(!title){$('#edMsg').textContent='Vul een naam voor de taak in.';return}
+    const who=[...document.querySelectorAll('#ed-whoList input:checked')].map(c=>c.value).join(', ');
+    const upd={title,team:$('#ed-team').value,status:$('#ed-status').value,kind:$('#ed-kind').value,due:$('#ed-due').value||'',who};
+    const btn=$('#edSave');btn.disabled=true;btn.textContent='Opslaan…';
+    try{await db.doc('tasks/'+editingId).update(upd);$('#editDlg').close();editingId=null;setStatus('Taak bijgewerkt.')}
+    catch(err){$('#edMsg').textContent='Opslaan lukte niet. Probeer het opnieuw.';writeFail(err)}
+    finally{btn.disabled=false;btn.textContent='Opslaan'}
+  });
+  document.querySelectorAll('#ed-due').forEach(i=>{i.min=START;i.max=END});
+
   /* tellers */
   function renderTeller(){
     const g=+teller.knopenGeprint||0, t=+teller.knopenTotaal||0, k=+teller.kokers||0;
@@ -720,7 +783,9 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         del.addEventListener('click',()=>{
           if(!armed){armed=true;del.textContent='Zeker?';del.classList.add('arm');timer=setTimeout(()=>{armed=false;del.textContent='Verwijder';del.classList.remove('arm')},3000);return}
           clearTimeout(timer);if(db)db.doc('tasks/'+t.id).delete().catch(writeFail)});
-        li.append(pill,body,del);list.append(li);
+        const eb=el('button','edit','Bewerk');eb.type='button';eb.disabled=!canWrite;eb.addEventListener('click',()=>openEdit(t.id));
+        const acts=el('div','acts');acts.append(eb,del);
+        li.append(pill,body,acts);list.append(li);
       }
     });
     renderWeeks();renderTeam();
@@ -872,7 +937,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     try{const r=await fetch(`https://api.github.com/repos/${CFG.owner}/${CFG.repo}`,{headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'}});
       if(!r.ok)return false;const j=await r.json();return !!(j.permissions&&j.permissions.push)}catch(_){return false}
   }
-  function renderEditBar(){const h=$('#weekHint');if(h)h.textContent=canWrite?'Taak klaar? Vink het hokje aan in het blokje van die dag.':'Taak klaar? Klik bovenaan op Bewerken met teamcode en vink het hokje aan in het blokje van die dag.';$('#editOn').hidden=!canWrite;$('#editOff').hidden=canWrite;$('#unlockPanel').hidden=true}
+  function renderEditBar(){const h=$('#weekHint');if(h)h.textContent=canWrite?'Taak klaar? Vink het hokje aan in het blokje van die dag. Klik op een taak om hem te bewerken.':'Taak klaar? Klik bovenaan op Bewerken met teamcode en vink het hokje aan in het blokje van die dag.';$('#editOn').hidden=!canWrite;$('#editOff').hidden=canWrite;$('#unlockPanel').hidden=true}
   $('#btnUnlock').addEventListener('click',()=>{$('#unlockPanel').hidden=false;$('#codeInput').focus()});
   $('#btnUnlockCancel').addEventListener('click',()=>{$('#unlockPanel').hidden=true});
   $('#btnLock').addEventListener('click',()=>{setToken('');try{sessionStorage.removeItem(TKEY)}catch(_){};canWrite=false;applyWrite();renderEditBar();refreshAll();renderTeam();setStatus('Vergrendeld. Je bekijkt de planning nu alleen.')});
