@@ -337,6 +337,16 @@ textarea{resize:vertical;min-height:64px}
 .btn.ok{background:var(--ok);color:var(--ink)}
 #btnRefresh{padding:3px 9px}
 
+.band-stats .bstep{display:inline-flex;gap:4px;margin-left:8px;vertical-align:4px}
+.band-stats .bstep button{width:24px;height:24px;border:1px solid var(--line);background:var(--inner);border-radius:5px;color:var(--fg);font:500 14px/1 var(--f-mono);padding:0;cursor:pointer}
+/* klapbaar */
+.fold{display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;color:inherit;cursor:pointer;font:inherit;text-align:left}
+.fold h2{font-size:19px}
+.fold .chev{font:14px var(--f-mono);color:var(--muted);transition:transform .2s}
+.fold[aria-expanded="false"] .chev{transform:rotate(-90deg)}
+@media (prefers-reduced-motion:reduce){.fold .chev{transition:none}}
+.me-next h3{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 0}
+
 details.rules{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
 details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:17px}
 .rules ul{margin:12px 0 0;padding-left:20px;display:grid;gap:4px;max-width:70ch}
@@ -356,7 +366,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <div class="band-stats">
         <div><span>Ontwerp</span><b id="bsO">–</b></div>
         <div><span>Productie</span><b id="bsP">–</b></div>
-        <div><span>Knopen geprint</span><b id="bsK">–</b></div>
+        <div><span>Knopen geprint</span><b id="bsK">–</b><span class="stepper bstep"><button type="button" data-step="knopenGeprint" data-d="-1" aria-label="Eén knoop minder">−</button><button type="button" data-step="knopenGeprint" data-d="1" aria-label="Eén knoop meer">+</button></span></div>
       </div>
       <div class="editbar">
         <div id="editOff"><span class="muted">Alleen bekijken</span><button type="button" class="linkbtn" id="btnUnlock">Bewerken met teamcode</button></div>
@@ -393,9 +403,11 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <div id="meBody"></div>
     </div>
     <div class="hp" id="feedPanel">
-      <div class="hp-head"><h2>Wat er gebeurt</h2><span class="newcount" id="newCount"></span></div>
-      <div id="feed"></div>
-      <button type="button" class="linkbtn" id="feedMore" hidden>Meer tonen</button>
+      <div class="hp-head"><button type="button" class="fold" id="feedToggle" aria-expanded="true" aria-controls="feedWrap"><span class="chev" aria-hidden="true">▾</span><h2>Wat er gebeurt</h2></button><span class="newcount" id="newCount"></span></div>
+      <div id="feedWrap" style="display:grid;gap:12px">
+        <div id="feed"></div>
+        <button type="button" class="linkbtn" id="feedMore" hidden>Meer tonen</button>
+      </div>
     </div>
   </section>
 
@@ -422,42 +434,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     <div class="tv-grid" id="teamView"></div>
   </section>
 
-  <section class="meters" aria-label="Voortgang">
-    <div class="meter">
-      <div class="meter-row"><span class="eyebrow">Knopen geprint</span><span class="big" id="knopenBig">0 <small>/ 5</small></span></div>
-      <div class="bar" id="knopenBar"><i style="width:0"></i></div>
-      <div class="stepper">
-        <button type="button" data-step="knopenGeprint" data-d="-1" aria-label="Eén knoop minder">−</button>
-        <input id="knopenGeprint" type="number" min="0" inputmode="numeric" aria-label="Aantal geprinte knopen">
-        <button type="button" data-step="knopenGeprint" data-d="1" aria-label="Eén knoop meer">+</button>
-      </div>
-      <p class="hint">Minimaal 5 geprint vóór de presentatie. De rest tijdens casus 3.</p>
-    </div>
-    <div class="meter">
-      <div class="meter-row"><span class="eyebrow">Knopen nodig in ontwerp</span><span class="big" id="nodigBig">–</span></div>
-      <div class="stepper">
-        <button type="button" data-step="knopenTotaal" data-d="-1" aria-label="Eén minder">−</button>
-        <input id="knopenTotaal" type="number" min="0" inputmode="numeric" aria-label="Totaal aantal knopen in ontwerp">
-        <button type="button" data-step="knopenTotaal" data-d="1" aria-label="Eén meer">+</button>
-      </div>
-      <p class="hint" id="nodigHint">Vult team Ontwerp in zodra het parametrische model staat.</p>
-    </div>
-    <div class="meter">
-      <div class="meter-row"><span class="eyebrow">Kokers in ontwerp</span><span class="big" id="kokersBig">0 <small>/ 45</small></span></div>
-      <div class="bar" id="kokersBar"><i style="width:0"></i></div>
-      <div class="stepper">
-        <button type="button" data-step="kokers" data-d="-1" aria-label="Eén koker minder">−</button>
-        <input id="kokers" type="number" min="0" max="45" inputmode="numeric" aria-label="Aantal kokers">
-        <button type="button" data-step="kokers" data-d="1" aria-label="Eén koker meer">+</button>
-      </div>
-      <p class="hint" id="kokersHint">Maximaal 45 kokers, gelijke diameter en korte lengte.</p>
-    </div>
-  </section>
 
-  <section aria-labelledby="msTitle" style="display:grid;gap:14px">
-    <div class="team-head"><h2 id="msTitle">Mijlpalen</h2><span class="muted" style="font-size:13px">Vul de datums in; de aftelling past zich aan.</span></div>
-    <div class="track" id="milestones"></div>
-  </section>
 
   <section class="teams" aria-label="Teams">
     <div class="team t-ontwerp" data-team="ontwerp">
@@ -547,7 +524,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
             <label class="mid"><input type="radio" name="result" value="onderweg"> Onderweg</label>
             <label class="bad"><input type="radio" name="result" value="mislukt"> Mislukt</label>
           </div></div>
-        <div class="field full"><label for="r-next">Wat je morgen gaat doen</label><span class="muted" style="font-size:12px">Dit wordt meteen een taak op de volgende schooldag.</span><textarea id="r-next" name="next" maxlength="600" placeholder="Bijv. tolerantie met 0,2 mm verruimen en opnieuw printen"></textarea></div>
+        <div class="field full"><label for="r-next">Wat je morgen gaat doen</label><span class="muted" style="font-size:12px">Bij een team wordt dit een taak op de volgende schooldag; bij een teamlid komt het in diens Mijn pagina.</span><textarea id="r-next" name="next" maxlength="600" placeholder="Bijv. tolerantie met 0,2 mm verruimen en opnieuw printen"></textarea></div>
         <div class="field full"><label for="r-photos">Foto's (optioneel, maximaal 4)</label><input id="r-photos" name="photos" type="file" accept="image/*" multiple><div class="ph-prev" id="r-prev"></div></div>
         <div class="full"><button class="btn" type="submit">Voortgang opslaan</button></div>
       </form>
@@ -893,7 +870,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   const memberTeam=name=>{const m=MEMBERS.find(x=>x.name===name);return m?(m.teams.length>1?'beide':m.teams[0]):'productie'};
   async function syncMorgenTask(rid,rec,prev){
     const tid='morgen-'+rid,t=tasks.find(x=>x.id===tid),nd=nextSchoolDay(rec.date);
-    const team=rec.group||memberTeam(rec.member),who=rec.group?'team':rec.member;
+    if(!rec.group){if(t)await db.doc('tasks/'+tid).delete();return null}
+    const team=rec.group,who='team';
     if(rec.next&&t)await db.doc('tasks/'+tid).update({title:rec.next,...(prev&&rec.date!==prev.date&&nd?{due:nd}:{})});
     else if(rec.next&&!t&&nd)await db.collection('tasks').doc(tid).set({team,title:rec.next,who,due:nd,kind:'taak',status:'open',created:Date.now(),fromRefl:rid});
     else if(!rec.next&&t)await db.doc('tasks/'+tid).delete();
@@ -975,6 +953,17 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         if(canWrite){tx.style.cursor='pointer';tx.title='Klik om te bewerken';tx.addEventListener('click',()=>openEdit(t.id))}
         li.append(cb,tx);ul.append(li)}
       box.append(ul)}
+    const nexts=refl.filter(r=>r.member===me&&!r.group&&r.next).sort(byDate);
+    if(nexts.length){const sec=el('div','me-next');sec.append(el('h3',null,'Volgende keer · uit je updates'));
+      const open=nexts.filter(r=>!r.nextDone),dn=nexts.filter(r=>r.nextDone).slice(0,2);const ul=el('ul','me-tasks');
+      for(const r of [...open,...dn]){const li=el('li',r.nextDone?'done':'');
+        const cb=el('input','dt-cb');cb.type='checkbox';cb.checked=!!r.nextDone;cb.disabled=!canWrite;cb.id='nx-'+r.id;cb.setAttribute('aria-label','Gedaan: '+r.next);
+        cb.title=canWrite?'Afvinken als je het gedaan hebt':'Klik bovenaan op Bewerken met teamcode om af te vinken';
+        cb.addEventListener('change',()=>{if(!db||!canWrite)return;cb.disabled=true;li.classList.toggle('done',cb.checked);
+          db.doc('reflecties/'+r.id).update({nextDone:cb.checked}).catch(e=>{cb.checked=!cb.checked;li.classList.toggle('done',cb.checked);cb.disabled=false;writeFail(e)})});
+        const tx=el('div');tx.style.minWidth='0';tx.append(el('span','mt-t',r.next),el('span','mt-m','uit je update van '+fmtDate(r.date)));
+        li.append(cb,tx);ul.append(li)}
+      sec.append(ul);box.append(sec)}
     if(canWrite){const a=el('div','me-acts');const b=el('button','btn',todayRefl?'Update van vandaag aanpassen':'Dag afsluiten');b.type='button';
       b.addEventListener('click',()=>todayRefl?openReflEdit(todayRefl.id):openDay());a.append(b);box.append(a)}
     else{const p=el('p','me-empty','Klik bovenaan op Bewerken met teamcode om af te vinken en je dag af te sluiten.');p.style.fontSize='13px';box.append(p)}
@@ -984,7 +973,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   function openDay(){
     const me=getMe();if(!me||!canWrite)return;
     $('#day-who').textContent=me+' · '+fmtDate(ymd(today()));$('#dayMsg').textContent='';
-    const nd=nextSchoolDay(ymd(today()));$('#day-next-hint').textContent=nd?'Wordt een taak voor jou op '+fmtDate(nd)+'.':'';
+    const nd=nextSchoolDay(ymd(today()));$('#day-next-hint').textContent='Komt in Mijn pagina te staan, zodat je het kunt afvinken.';
     const d=$('#dayDlg');if(d.showModal)d.showModal();else d.setAttribute('open','');$('#day-done').focus();
   }
   $('#dayCancel').addEventListener('click',()=>$('#dayDlg').close());
@@ -1042,6 +1031,9 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     $('#feedMore').hidden=all.length<=feedLimit;
   }
   $('#feedMore').addEventListener('click',()=>{feedLimit+=8;renderFeed()});
+  (()=>{const K='hs-feed-open',t=$('#feedToggle'),w=$('#feedWrap');let open=true;try{open=localStorage.getItem(K)!=='0'}catch(_){}
+    const apply=()=>{t.setAttribute('aria-expanded',String(open));w.hidden=!open};apply();
+    t.addEventListener('click',()=>{open=!open;apply();try{localStorage.setItem(K,open?'1':'0')}catch(_){}})})();
 
   function showTab(){
     const h=(location.hash||'').slice(1);const tab=h==='team'?'team':'planning';
@@ -1082,6 +1074,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   /* tellers */
   function renderTeller(){
     renderBand();
+    if(!$('#knopenBig'))return;
     const g=+teller.knopenGeprint||0, t=+teller.knopenTotaal||0, k=+teller.kokers||0;
     const goal=t>0?t:5;
     $('#knopenBig').innerHTML='';$('#knopenBig').append(String(g),' ',el('small',null,'/ '+goal));
@@ -1103,11 +1096,11 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   }
   document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{
     const f=b.dataset.step;saveTeller(f,(+teller[f]||0)+ +b.dataset.d)}));
-  ['knopenGeprint','knopenTotaal','kokers'].forEach(id=>document.getElementById(id).addEventListener('change',e=>saveTeller(id,e.target.value)));
+  ['knopenGeprint','knopenTotaal','kokers'].forEach(id=>document.getElementById(id)?.addEventListener('change',e=>saveTeller(id,e.target.value)));
 
   /* mijlpalen */
   function renderMilestones(){
-    const box=$('#milestones');box.innerHTML='';
+    const box=$('#milestones');if(!box){renderWeeks();return}box.innerHTML='';
     if(!milestones.length){box.append(el('p','empty','Nog geen mijlpalen. Ze verschijnen hier zodra de planning geladen is.'));return}
     for(const m of [...milestones].sort((a,b)=>(a.order||0)-(b.order||0))){
       const d=daysTo(m.date), past=d!=null&&d<0;
