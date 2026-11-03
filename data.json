@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T09:59:43+00:00",
+ "updatedAt": "2026-11-03T10:05:28.921Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -62,6 +62,16 @@
    "team": "productie",
    "title": "Testprintje maken: tolerantie, diepte en grip van de koppeling testen op de afmetingen van de staafjes",
    "who": "Lieke, Sem"
+  },
+  {
+   "id": "mw0iv38e4kvn7",
+   "team": "beide",
+   "title": "pva presenatie",
+   "who": "team",
+   "due": "2026-10-30",
+   "kind": "deadline",
+   "status": "open",
+   "created": 1793700328477
   }
  ],
  "milestones": [
