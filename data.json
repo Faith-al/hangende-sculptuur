@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T10:13:37.166Z",
+ "updatedAt": "2026-11-03T10:15:03.843Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -179,6 +179,16 @@
    "result": "geslaagd",
    "next": "Verder uitzoeken hoe we een parametrische knoopsysteem gaan maken.",
    "at": 1793700816733
+  },
+  {
+   "id": "mw0j7ewdpfiav",
+   "member": "Faith",
+   "group": "",
+   "date": "2026-10-30",
+   "done": "Ik heb een 3d print gemaakt om te testen hoe we de trekkracht kunnen oplossen met een paar bouten.",
+   "result": "geslaagd",
+   "next": "Resultaat laten zien aan de groep.",
+   "at": 1793700903469
   }
  ],
  "weeks": {
