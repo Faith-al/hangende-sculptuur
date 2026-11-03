@@ -207,6 +207,8 @@ textarea{resize:vertical;min-height:64px}
 .dtasks{list-style:none;margin:0;padding:0;display:grid;gap:5px}
 .dtasks li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;padding:5px 7px;border-radius:5px;background:var(--surface);border-left:3px solid var(--kraft);min-width:0}
 .dtasks li.ontwerp{border-left-color:var(--ontwerp)}
+.dtasks li.beide{border-left:3px solid var(--kraft);border-image:linear-gradient(var(--ontwerp) 50%,var(--kraft) 50%) 1}
+.t-meta .both{font-weight:600;color:var(--fg)}
 .dtasks li.deadline{background:var(--warn-soft);border:1px dashed var(--warn);border-left:3px solid var(--kraft)}
 .dtasks li.deadline.ontwerp{border-left-color:var(--ontwerp)}
 .dt-txt{display:grid;gap:1px;min-width:0}
@@ -416,7 +418,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <h3 id="edTitle">Taak bewerken</h3>
       <div class="field"><label for="ed-title">Taak</label><textarea id="ed-title" name="title" required maxlength="300" rows="2"></textarea></div>
       <div class="ed-row">
-        <div class="field"><label for="ed-team">Team</label><select id="ed-team" name="team"><option value="ontwerp">Ontwerp</option><option value="productie">Productie</option></select></div>
+        <div class="field"><label for="ed-team">Team</label><select id="ed-team" name="team"><option value="ontwerp">Ontwerp</option><option value="productie">Productie</option><option value="beide">Beide teams</option></select></div>
         <div class="field"><label for="ed-status">Status</label><select id="ed-status" name="status"><option value="open">Open</option><option value="bezig">Bezig</option><option value="klaar">Klaar</option></select></div>
       </div>
       <div class="ed-row">
@@ -535,7 +537,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
           db.doc('tasks/'+t.id).update({status:cb.checked?'klaar':'open'}).catch(e=>{cb.checked=!cb.checked;li.classList.toggle('done',cb.checked);cb.disabled=false;writeFail(e)})});
         const txt=el('div','dt-txt'+(canWrite?' can':''));txt.append(el('span','dt-t',t.title));
         if(canWrite){txt.tabIndex=0;txt.setAttribute('role','button');txt.title='Klik om te bewerken';txt.addEventListener('click',()=>openEdit(t.id));txt.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openEdit(t.id)}})}
-        txt.append(el('span','dt-m',(kd==='taak'?'Taak · ':'Deadline · ')+(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.who?' · '+whoLabel(t.who):'')+(t.status==='bezig'?' · bezig':t.status==='klaar'?' · klaar':'')));
+        txt.append(el('span','dt-m',(kd==='taak'?'Taak · ':'Deadline · ')+teamLabel(t.team)+(t.who&&!(t.team==='beide'&&t.who==='team')?' · '+whoLabel(t.who):'')+(t.status==='bezig'?' · bezig':t.status==='klaar'?' · klaar':'')));
         li.append(cb,txt);ul.append(li)}
       c.append(ul)}
   }
@@ -580,17 +582,19 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     {name:'Ilse',teams:['productie']},{name:'Lieke',teams:['productie']},{name:'Renske',teams:['productie']},{name:'Sem',teams:['productie']}];
   document.querySelectorAll('select[data-who]').forEach(sel=>{
     const t=sel.dataset.who;const first=el('option',null,t==='all'||t==='comm'?'Kies naam':'Nog niemand');first.value='';sel.append(first);
-    if(t==='ontwerp'||t==='productie'){const o=el('option',null,'Hele team');o.value='team';sel.append(o)}
+    if(t==='ontwerp'||t==='productie'){const o=el('option',null,'Hele team');o.value='team';const o2=el('option',null,'Beide teams samen');o2.value='beide';sel.append(o,o2)}
     MEMBERS.filter(m=>t==='all'||(t==='comm'?m.comm:m.teams.includes(t))).forEach(m=>{const o=el('option',null,m.name);o.value=m.name;sel.append(o)});
   });
+  const teamLabel=t=>t==='beide'?'Beide teams':t==='ontwerp'?'Ontwerp':'Productie';
+  const inTeam=(t,team)=>t.team===team||t.team==='beide';
   const whoLabel=w=>w==='team'?'Hele team':(w||'');
   const whoList=w=>(w||'').toLowerCase().split(/\s*(?:,|&|\/|\+|\ben\b)\s*/).map(x=>x.trim()).filter(Boolean);
-  const tasksOf=name=>{const m=MEMBERS.find(x=>x.name===name);return tasks.filter(t=>whoList(t.who).includes(name.toLowerCase())||(t.who==='team'&&m&&m.teams.includes(t.team)))};
+  const tasksOf=name=>{const m=MEMBERS.find(x=>x.name===name);return tasks.filter(t=>whoList(t.who).includes(name.toLowerCase())||(t.who==='team'&&m&&(t.team==='beide'||m.teams.includes(t.team))))};
   const statusRank={bezig:0,open:1,klaar:2};
   function renderTeam(){
     const sum=$('#teamSummary');sum.innerHTML='';
     for(const team of ['ontwerp','productie']){
-      const ts=tasks.filter(t=>t.team===team), done=ts.filter(t=>t.status==='klaar').length;
+      const ts=tasks.filter(t=>inTeam(t,team)), done=ts.filter(t=>t.status==='klaar').length;
       const box=el('div');
       const h=el('div','team-head');const h3=el('h3');const dot=el('span');dot.style.cssText=`display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;background:var(--${team==='ontwerp'?'ontwerp':'kraft'})`;
       h3.append(dot,team==='ontwerp'?'Ontwerp':'Productie');h.append(h3,el('span','progress',ts.length?`${done}/${ts.length} klaar`:'nog geen taken'));
@@ -626,7 +630,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       if(next){nx.append('Volgende deadline: ');nx.append(el('b',null,fmtDate(next.due)))}else if(!late)nx.append(mine.length?'Geen openstaande deadlines':'Nog geen taken toegewezen');
       card.append(nx);
       if(mine.length){const ul=el('ul','m-tasks');for(const t of mine){const li=el('li',t.status);li.append(el('span','pill '+t.status,t.status));
-        const tt=el('span','tt',t.title);tt.append(el('small',null,(t.team==='ontwerp'?'Ontwerp':'Productie')+(t.due?' · '+(t.kind==='taak'?'taak ':'deadline ')+fmtDate(t.due):'')));li.append(tt);ul.append(li)}card.append(ul)}
+        const tt=el('span','tt',t.title);tt.append(el('small',null,teamLabel(t.team)+(t.due?' · '+(t.kind==='taak'?'taak ':'deadline ')+fmtDate(t.due):'')));li.append(tt);ul.append(li)}card.append(ul)}
       card.append(reflBlock(m));
       box.append(card);
     }
@@ -692,7 +696,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   let editingId=null;
   function fillWho(team,selected){
     const box=$('#ed-whoList');box.innerHTML='';
-    MEMBERS.filter(m=>m.teams.includes(team)).forEach(m=>{const l=el('label');const c=el('input');c.type='checkbox';c.value=m.name;c.name='who';c.checked=selected.includes(m.name.toLowerCase());l.append(c,m.name);box.append(l)});
+    MEMBERS.filter(m=>team==='beide'||m.teams.includes(team)).forEach(m=>{const l=el('label');const c=el('input');c.type='checkbox';c.value=m.name;c.name='who';c.checked=selected.includes(m.name.toLowerCase());l.append(c,m.name);box.append(l)});
   }
   function openEdit(id){
     const t=tasks.find(x=>x.id===id);if(!t||!canWrite)return;editingId=id;
@@ -767,7 +771,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   function renderTasks(){
     document.querySelectorAll('[data-team]').forEach(col=>{
       const team=col.dataset.team, list=col.querySelector('[data-list]');
-      const mine=tasks.filter(t=>t.team===team).sort((a,b)=>{
+      const mine=tasks.filter(t=>inTeam(t,team)).sort((a,b)=>{
         const r={bezig:0,open:1,klaar:2};
         return (r[a.status]-r[b.status])||((a.due||'9')<(b.due||'9')?-1:(a.due||'9')>(b.due||'9')?1:0)||((a.created||0)-(b.created||0))});
       const done=mine.filter(t=>t.status==='klaar').length;
@@ -782,7 +786,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         pill.addEventListener('click',()=>{if(db)db.doc('tasks/'+t.id).update({status:NEXT[t.status]||'open'}).catch(writeFail)});
         const body=el('div','t-body');body.append(el('span','t-title',t.title));
         const meta=el('div','t-meta');
-        if(t.who)meta.append(el('span',null,whoLabel(t.who)));
+        if(t.team==='beide')meta.append(el('span','both','Beide teams'));if(t.who&&!(t.team==='beide'&&t.who==='team'))meta.append(el('span',null,whoLabel(t.who)));
         if(t.due){const d=daysTo(t.due);const s=el('span',d<0&&t.status!=='klaar'?'late':null,(d<0&&t.status!=='klaar'?(t.kind==='taak'?'niet afgerond · ':'te laat · '):'')+(t.kind==='taak'?'Taak op ':'Deadline ')+fmtDate(t.due));meta.append(s);const k=dayKind(t.due);if(k==='leerplek'||k==='weekend')meta.append(el('span','lp',k==='leerplek'?'leerplekdag':'weekend'))}
         if(meta.childNodes.length)body.append(meta);
         const del=el('button','del','Verwijder');del.type='button';del.disabled=!canWrite;
@@ -802,7 +806,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const team=f.closest('[data-team]').dataset.team, fd=new FormData(f);
     const title=(fd.get('title')||'').trim();if(!title)return;
     const btn=f.querySelector('button');btn.disabled=true;
-    try{await db.collection('tasks').add({team,title,who:(fd.get('who')||'').trim(),due:fd.get('due')||'',kind:fd.get('kind')||'taak',status:'open',created:Date.now()});
+    const w0=(fd.get('who')||'').trim();const both=w0==='beide';
+    try{await db.collection('tasks').add({team:both?'beide':team,title,who:both?'team':w0,due:fd.get('due')||'',kind:fd.get('kind')||'taak',status:'open',created:Date.now()});
       f.querySelector('[name=title]').value='';f.querySelector('[name=who]').value='';f.querySelector('[name=due]').value='';setStatus('Taak toegevoegd.')}
     catch(err){writeFail(err)}finally{btn.disabled=!canWrite}
   }));
