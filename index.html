@@ -347,6 +347,12 @@ textarea{resize:vertical;min-height:64px}
 @media (prefers-reduced-motion:reduce){.fold .chev{transition:none}}
 .me-next h3{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 0}
 
+#feedWrap{position:relative}
+#feedWrap.clamp{overflow:hidden}
+#feedWrap.clamp::after{content:"";position:absolute;left:0;right:0;bottom:0;height:64px;background:linear-gradient(transparent,var(--surface-solid));pointer-events:none}
+.feed-acts{display:flex;gap:8px;flex-wrap:wrap}
+.feed-acts:has(button:not([hidden]))::before{content:none}
+
 details.rules{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
 details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:17px}
 .rules ul{margin:12px 0 0;padding-left:20px;display:grid;gap:4px;max-width:70ch}
@@ -403,11 +409,9 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <div id="meBody"></div>
     </div>
     <div class="hp" id="feedPanel">
-      <div class="hp-head"><button type="button" class="fold" id="feedToggle" aria-expanded="true" aria-controls="feedWrap"><span class="chev" aria-hidden="true">▾</span><h2>Wat er gebeurt</h2></button><span class="newcount" id="newCount"></span></div>
-      <div id="feedWrap" style="display:grid;gap:12px">
-        <div id="feed"></div>
-        <button type="button" class="linkbtn" id="feedMore" hidden>Meer tonen</button>
-      </div>
+      <div class="hp-head"><h2>Wat er gebeurt</h2><span class="newcount" id="newCount"></span></div>
+      <div id="feedWrap"><div id="feed"></div></div>
+      <div class="feed-acts"><button type="button" class="linkbtn" id="feedExpand" aria-controls="feedWrap" aria-expanded="false" hidden>Toon alles ▾</button><button type="button" class="linkbtn" id="feedMore" hidden>Meer tonen</button></div>
     </div>
   </section>
 
@@ -923,6 +927,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const c2=c1.cloneNode();c2.setAttribute('stroke',color);c2.setAttribute('stroke-dasharray',`${(frac*94.25).toFixed(1)} 94.25`);c2.setAttribute('transform','rotate(-90 18 18)');c2.setAttribute('stroke-linecap','round');
     s.append(c1,c2);return s}
   function renderMe(){
+    requestAnimationFrame(()=>typeof fitFeed==='function'&&fitFeed());
     const box=$('#meBody');if(!box)return;box.innerHTML='';const me=getMe();$('#meSel').value=me;
     if(!me){box.append(el('p','me-empty','Kies rechtsboven je naam. Dan zie je hier je eigen taken en voortgang. Je keuze wordt op dit apparaat onthouden.'));return}
     const m=MEMBERS.find(x=>x.name===me);const mine=tasksOf(me);const done=mine.filter(t=>t.status==='klaar').length;
@@ -997,7 +1002,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   presetMember();$('#meSel').addEventListener('change',presetMember);
 
   /* ---------- Wat er gebeurt ---------- */
-  const SEENKEY='hs-seen';let seenBefore=0,feedLimit=8;
+  const SEENKEY='hs-seen';let seenBefore=0,feedLimit=8,feedOpen=false;
   try{seenBefore=+localStorage.getItem(SEENKEY)||0}catch(_){}
   const pageOpened=Date.now();
   function saveSeen(){try{localStorage.setItem(SEENKEY,String(Date.now()))}catch(_){}}
@@ -1018,8 +1023,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   function renderFeed(){
     const box=$('#feed');if(!box)return;box.innerHTML='';const all=feedEvents();
     const nNew=seenBefore?all.filter(e=>e.at>seenBefore).length:0;$('#newCount').textContent=nNew?nNew+' nieuw sinds je laatst keek':'';
-    if(!all.length){box.append(el('p','me-empty','Hier verschijnen updates, foto\'s en afgeronde taken van het team.'));$('#feedMore').hidden=true;return}
-    for(const e of all.slice(0,feedLimit)){
+    if(!all.length){box.append(el('p','me-empty','Hier verschijnen updates, foto\'s en afgeronde taken van het team.'));requestAnimationFrame(fitFeed);return}
+    for(const e of all.slice(0,feedOpen?feedLimit:12)){
       const row=el('div','fe');const av=el('div','av '+(e.team||''),(e.who||'?')[0]==='T'&&e.who.startsWith('Team')?e.who.split(' ')[1][0]:(e.who||'✓')[0]);av.setAttribute('aria-hidden','true');
       const body=el('div','fe-t');
       if(e.kind==='refl'){const r=e.r;const h=el('div');h.append(el('b',null,e.who));if(r.result)h.append(el('span','tagx '+r.result,r.result));if(seenBefore&&e.at>seenBefore)h.append(el('span','newtag','NIEUW'));
@@ -1028,12 +1033,23 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       else if(e.kind==='done'){const h=el('div');h.append(el('b',null,e.who||'Iemand'),' rondde een taak af');if(seenBefore&&e.at>seenBefore)h.append(el('span','newtag','NIEUW'));body.append(h,el('small',null,e.t.title+' · '+when(e.at)))}
       else{const h=el('div');h.append('Nieuwe taak voor ',el('b',null,teamLabel(e.t.team)));if(seenBefore&&e.at>seenBefore)h.append(el('span','newtag','NIEUW'));body.append(h,el('small',null,e.t.title+(e.t.due?' · '+fmtDate(e.t.due):'')))}
       row.append(av,body);box.append(row)}
-    $('#feedMore').hidden=all.length<=feedLimit;
+    requestAnimationFrame(fitFeed);
   }
   $('#feedMore').addEventListener('click',()=>{feedLimit+=8;renderFeed()});
-  (()=>{const K='hs-feed-open',t=$('#feedToggle'),w=$('#feedWrap');let open=true;try{open=localStorage.getItem(K)!=='0'}catch(_){}
-    const apply=()=>{t.setAttribute('aria-expanded',String(open));w.hidden=!open};apply();
-    t.addEventListener('click',()=>{open=!open;apply();try{localStorage.setItem(K,open?'1':'0')}catch(_){}})})();
+  function fitFeed(){
+    const w=$('#feedWrap'),fp=$('#feedPanel'),mp=$('#mePanel'),btn=$('#feedExpand');if(!w||!fp||!mp)return;
+    if(feedOpen){w.style.maxHeight='';w.classList.remove('clamp');btn.hidden=false;btn.textContent='Inklappen ▴';btn.setAttribute('aria-expanded','true');$('#feedMore').hidden=!(feedEvents().length>feedLimit);return}
+    $('#feedMore').hidden=true;
+    const wide=matchMedia('(min-width:761px)').matches;
+    const other=fp.offsetHeight-w.offsetHeight;
+    const target=wide?Math.max(260,mp.offsetHeight-other):420;
+    w.style.maxHeight='none';const full=w.scrollHeight;
+    if(full<=target+8){w.style.maxHeight='';w.classList.remove('clamp');btn.hidden=true;return}
+    w.style.maxHeight=target+'px';w.classList.add('clamp');btn.hidden=false;btn.textContent='Toon alles ▾';btn.setAttribute('aria-expanded','false');
+  }
+  $('#feedExpand').addEventListener('click',()=>{feedOpen=!feedOpen;if(!feedOpen)feedLimit=8;renderFeed();if(!feedOpen)$('#feedPanel').scrollIntoView({block:'nearest'})});
+  window.addEventListener('resize',()=>fitFeed());
+  if(window.ResizeObserver)new ResizeObserver(()=>fitFeed()).observe($('#mePanel'));
 
   function showTab(){
     const h=(location.hash||'').slice(1);const tab=h==='team'?'team':'planning';
