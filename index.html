@@ -253,8 +253,18 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   <header>
     <span class="eyebrow">Casus · Hangende sculptuur (asymmetrisch)</span>
     <h1>Planning kokers &amp; knopen</h1>
-    <p class="intro">Eén plek voor team Ontwerp (verbindingen ontwerpen) en team Productie (verbindingen maken). Deze pagina is om mee te kijken. De communicators Faith en Nariman houden de planning bij.</p>
-    <div class="editbar"><span class="muted" id="syncInfo"></span></div>
+    <p class="intro">Eén plek voor team Ontwerp (verbindingen ontwerpen) en team Productie (verbindingen maken). Iedereen kan meekijken. Met de teamcode kun je je eigen taken en voortgang bijwerken; wijzigingen staan direct online.</p>
+    <div class="editbar">
+      <div id="editOff"><span class="muted">Alleen bekijken</span><button type="button" class="linkbtn" id="btnUnlock">Bewerken met teamcode</button></div>
+      <div id="editOn" hidden><span class="onpill">Bewerkmodus</span><button type="button" class="linkbtn" id="btnLock">Vergrendelen</button></div>
+      <span class="muted" id="syncInfo"></span>
+    </div>
+    <form id="unlockPanel" class="loginpanel nolock" hidden>
+      <div class="field"><label for="codeInput">Teamcode</label><input id="codeInput" type="password" autocomplete="off" placeholder="Code van je team"></div>
+      <label class="muted" style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="rememberCode" checked> Onthoud op dit apparaat</label>
+      <p id="unlockMsg" class="status err" style="margin:0"></p>
+      <div style="display:flex;gap:8px"><button class="btn" type="submit">Ontgrendelen</button><button class="linkbtn" type="button" id="btnUnlockCancel">Annuleren</button></div>
+    </form>
     <p class="status" id="status" role="status">Planning laden…</p>
   </header>
 
@@ -374,6 +384,18 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <li>De constructie moet veilig opgehangen kunnen worden</li>
     </ul>
   </details>
+
+  <details class="rules nolock" id="beheer">
+    <summary>Beheer (alleen voor Faith)</summary>
+    <form id="setupForm" class="nolock" style="display:grid;gap:10px;margin-top:12px;max-width:560px">
+      <p class="muted" style="margin:0;font-size:14px">Stel hier de teamcode in. Plak je GitHub-sleutel (alleen toegang tot deze repository, <i>Contents: Read and write</i>) en kies een code. De sleutel wordt versleuteld met de code en als <code>secret.json</code> in de repository gezet. Een nieuwe code instellen maakt de oude ongeldig.</p>
+      <div class="field"><label for="setupToken">GitHub-sleutel</label><input id="setupToken" type="password" autocomplete="off" placeholder="github_pat_…"></div>
+      <div class="field"><label for="setupCode">Nieuwe teamcode</label><input id="setupCode" type="text" autocomplete="off" placeholder="bijv. koker-knoop-zwaluw"></div>
+      <div class="field"><label for="setupCode2">Teamcode herhalen</label><input id="setupCode2" type="text" autocomplete="off"></div>
+      <p id="setupMsg" class="status" style="margin:0"></p>
+      <div><button class="btn" type="submit">Teamcode opslaan</button></div>
+    </form>
+  </details>
   </div>
 
   <div class="view" id="view-team" hidden>
@@ -393,7 +415,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
             <label class="mid"><input type="radio" name="result" value="onderweg"> Onderweg</label>
             <label class="bad"><input type="radio" name="result" value="mislukt"> Mislukt</label>
           </div></div>
-        <div class="field full"><label for="r-next">Wat je morgen gaat doen</label><textarea id="r-next" name="next" maxlength="600" placeholder="Bijv. tolerantie met 0,2 mm verruimen en opnieuw printen"></textarea></div>
+        <div class="field full"><label for="r-next">Wat je morgen gaat doen</label><span class="muted" style="font-size:12px">Bij een hele team wordt dit meteen een taak op de volgende schooldag.</span><textarea id="r-next" name="next" maxlength="600" placeholder="Bijv. tolerantie met 0,2 mm verruimen en opnieuw printen"></textarea></div>
         <div class="full"><button class="btn" type="submit">Voortgang opslaan</button></div>
       </form>
     </section>
@@ -424,7 +446,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     if(e&&e.code==='invalid_argument'){setStatus('Opslaan geweigerd door GitHub. Controleer of je sleutel nog geldig is en schrijfrechten heeft.',true)}
         else setStatus('Opslaan lukte niet. Probeer het zo opnieuw.',true);
   }
-  function applyWrite(){const rs=document.getElementById('reflSection');if(rs)rs.hidden=!canWrite;document.body.classList.toggle('readonly',!canWrite);document.querySelectorAll('form:not(#loginPanel) button, .stepper button, .stepper input, .ms input, .goal, select').forEach(b=>b.disabled=!canWrite)}
+  function applyWrite(){const rs=document.getElementById('reflSection');if(rs)rs.hidden=!canWrite;document.body.classList.toggle('readonly',!canWrite);document.querySelectorAll('form:not(.nolock) button, .stepper button, .stepper input, .ms input, .goal, select').forEach(b=>b.disabled=!canWrite)}
 
   /* periode */
   const START='2026-10-28', END='2026-11-20';
@@ -566,7 +588,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   function delBtn(r){
     const del=el('button','del','Verwijder');del.type='button';del.disabled=!canWrite;let armed=false,timer;
     del.addEventListener('click',()=>{if(!armed){armed=true;del.textContent='Zeker?';del.classList.add('arm');timer=setTimeout(()=>{armed=false;del.textContent='Verwijder';del.classList.remove('arm')},3000);return}
-      clearTimeout(timer);if(db)db.doc('reflecties/'+r.id).delete().catch(writeFail)});
+      clearTimeout(timer);if(db){db.doc('reflecties/'+r.id).delete().catch(writeFail);if(r.group)db.doc('tasks/morgen-'+r.id).delete().catch(()=>{})}});
     return del;
   }
   const byDate=(a,b)=>(b.date||'').localeCompare(a.date||'')||(b.at||0)-(a.at||0);
@@ -593,13 +615,16 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     [['team:ontwerp','Team Ontwerp'],['team:productie','Team Productie']].forEach(([v,l])=>{const o=el('option',null,l);o.value=v;g.append(o)});
     const gm=el('optgroup');gm.label='Eén teamlid';MEMBERS.forEach(m=>{const o=el('option',null,m.name);o.value=m.name;gm.append(o)});
     sel.append(g,gm)})();
+  function nextSchoolDay(from){const d=parseDate(from);for(let i=1;i<=14;i++){d.setDate(d.getDate()+1);const x=ymd(d);if(x>END)return null;if(dayKind(x)==='school')return x}return null}
   $('#r-date').value=ymd(today());
   $('#reflForm').addEventListener('submit',async e=>{
     e.preventDefault();if(!db)return;const f=e.target,fd=new FormData(f);
     const who=fd.get('member')||'';const rec={member:who.startsWith('team:')?'':who,group:who.startsWith('team:')?who.slice(5):'',date:fd.get('date')||ymd(today()),done:(fd.get('done')||'').trim(),result:fd.get('result')||'',next:(fd.get('next')||'').trim(),at:Date.now()};
     if((!rec.member&&!rec.group)||!rec.done)return;
     const btn=f.querySelector('button[type=submit]');btn.disabled=true;
-    try{await db.collection('reflecties').add(rec);['done','next'].forEach(n=>f.querySelector('[name='+n+']').value='');f.querySelectorAll('[name=result]').forEach(r=>r.checked=false);setStatus(rec.group?'Groepsvoortgang voor team '+(rec.group==='ontwerp'?'Ontwerp':'Productie')+' opgeslagen.':'Voortgang van '+rec.member+' opgeslagen.')}
+    try{const ref=await db.collection('reflecties').add(rec);
+      if(rec.group&&rec.next){const nd=nextSchoolDay(rec.date);
+        if(nd)await db.collection('tasks').doc('morgen-'+ref.id).set({team:rec.group,title:rec.next,who:'',due:nd,kind:'taak',status:'open',created:Date.now(),fromRefl:ref.id})}['done','next'].forEach(n=>f.querySelector('[name='+n+']').value='');f.querySelectorAll('[name=result]').forEach(r=>r.checked=false);setStatus(rec.group?'Groepsvoortgang voor team '+(rec.group==='ontwerp'?'Ontwerp':'Productie')+' opgeslagen.':'Voortgang van '+rec.member+' opgeslagen.')}
     catch(err){writeFail(err)}finally{btn.disabled=!canWrite}
   });
   function showTab(){
@@ -731,7 +756,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   CFG.branch='main';CFG.file='data.json';
   const API=`https://api.github.com/repos/${CFG.owner}/${CFG.repo}/contents/${CFG.file}`;
   const TKEY='hs-token';
-  const getToken=()=>{try{return localStorage.getItem(TKEY)||''}catch(_){return ''}};
+  const getToken=()=>{try{return localStorage.getItem(TKEY)||sessionStorage.getItem(TKEY)||''}catch(_){return ''}};
   const setToken=v=>{try{v?localStorage.setItem(TKEY,v):localStorage.removeItem(TKEY)}catch(_){}};
   let state={tasks:[],milestones:[],log:[],reflecties:[],weeks:{},teller:{}}, sha=null;
   const listeners=[];
@@ -757,7 +782,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   function emit(){listeners.forEach(l=>l())}
   async function refresh(quiet){
     try{state=await loadRemote();emit();if(!quiet&&!canWrite)setStatus('');lastSync=Date.now();updateSync()}
-    catch(e){if(e&&e.code==='auth'){canWrite=false;applyWrite();renderEditBar();setStatus('Je GitHub-sleutel werkt niet meer. Log opnieuw in om te bewerken.',true)}
+    catch(e){if(e&&e.code==='auth'){canWrite=false;applyWrite();renderEditBar();setStatus('De bewerksleutel werkt niet meer. Vraag Faith om een nieuwe sleutel in te stellen.',true)}
       else if(!quiet)setStatus('De planning kon niet geladen worden. Controleer je internet en herlaad de pagina.',true)}
   }
   // Elke wijziging: haal de nieuwste versie op, pas de wijziging toe, sla op als commit.
@@ -765,7 +790,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   function commit(label,fn){
     const job=queue.then(async()=>{
       for(let attempt=0;attempt<3;attempt++){
-        const fresh=await loadRemote();fn(fresh);
+        const fresh=await loadRemote();fn(fresh);fresh.updatedAt=new Date().toISOString();
         const r=await fetch(API,{method:'PUT',headers:{Authorization:'Bearer '+getToken(),Accept:'application/vnd.github+json','Content-Type':'application/json'},
           body:JSON.stringify({message:label,content:b64e(JSON.stringify(fresh,null,1)+'\n'),sha,branch:CFG.branch})});
         if(r.ok){const j=await r.json();sha=j.content.sha;state=fresh;emit();lastSync=Date.now();updateSync();setStatus('Opgeslagen.');return}
@@ -794,7 +819,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
           if(opts.f)rows.sort((a,b)=>(a[opts.f]>b[opts.f]?1:-1)*(opts.dir==='desc'?-1:1));if(opts.n)rows=rows.slice(0,opts.n);
           cb({docs:rows.map(r=>{const {id,...rest}=r;return {id,data:()=>rest}})})};
         listeners.push(fire);fire();return()=>{}},
-      add:o=>{const id=uid();return commit(name==='log'?'Overdrachtslog':'Nieuwe taak: '+(o.title||''),d=>{d[name].push({id,...o})})},
+      add:o=>{const id=uid();const lbl=name==='log'?'Overdrachtslog':name==='reflecties'?'Voortgang '+(o.member||('team '+o.group)):'Nieuwe taak: '+(o.title||'');return commit(lbl,d=>{d[name].push({id,...o})}).then(()=>({id}))},
       doc:id=>docRef(name,id)};
     return q;
   }
@@ -805,7 +830,71 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   let lastSync=0;
   function updateSync(){const e=$('#syncInfo');const u=state.updatedAt;if(!u){e.textContent='';return}
     const d=new Date(u);e.textContent='Gegevens bijgewerkt op '+d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'})+' om '+d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}
-  function renderEditBar(){}
+  /* ---------- teamcode ---------- */
+  const enc=new TextEncoder(), dec=new TextDecoder();
+  const toB64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const fromB64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+  const ITER=310000;
+  async function deriveKey(code,salt,iter){
+    const base=await crypto.subtle.importKey('raw',enc.encode(code.trim()),'PBKDF2',false,['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  }
+  async function encryptToken(token,code){
+    const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+    const key=await deriveKey(code,salt,ITER);
+    const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(token));
+    return {v:1,iter:ITER,salt:toB64(salt),iv:toB64(iv),ct:toB64(ct)};
+  }
+  async function decryptToken(sec,code){
+    const key=await deriveKey(code,fromB64(sec.salt),sec.iter||ITER);
+    return dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:fromB64(sec.iv)},key,fromB64(sec.ct)));
+  }
+  async function loadSecret(){
+    const t=Date.now();
+    for(const u of ['secret.json?t='+t,`https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/secret.json?t=${t}`]){
+      try{const r=await fetch(u,{cache:'no-store'});if(r.ok)return await r.json()}catch(_){}}
+    return null;
+  }
+  async function canPush(tok){
+    try{const r=await fetch(`https://api.github.com/repos/${CFG.owner}/${CFG.repo}`,{headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'}});
+      if(!r.ok)return false;const j=await r.json();return !!(j.permissions&&j.permissions.push)}catch(_){return false}
+  }
+  function renderEditBar(){$('#editOn').hidden=!canWrite;$('#editOff').hidden=canWrite;$('#unlockPanel').hidden=true}
+  $('#btnUnlock').addEventListener('click',()=>{$('#unlockPanel').hidden=false;$('#codeInput').focus()});
+  $('#btnUnlockCancel').addEventListener('click',()=>{$('#unlockPanel').hidden=true});
+  $('#btnLock').addEventListener('click',()=>{setToken('');try{sessionStorage.removeItem(TKEY)}catch(_){};canWrite=false;applyWrite();renderEditBar();refreshAll();renderTeam();setStatus('Vergrendeld. Je bekijkt de planning nu alleen.')});
+  $('#unlockPanel').addEventListener('submit',async e=>{
+    e.preventDefault();const code=$('#codeInput').value;if(!code.trim())return;
+    const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;btn.textContent='Controleren…';$('#unlockMsg').textContent='';
+    try{
+      const sec=await loadSecret();
+      if(!sec){$('#unlockMsg').textContent='Er is nog geen teamcode ingesteld. Faith kan dat doen onder Beheer onderaan de pagina.';return}
+      let tok;try{tok=await decryptToken(sec,code)}catch(_){$('#unlockMsg').textContent='Deze code klopt niet. Controleer hem en probeer opnieuw.';return}
+      if(!(await canPush(tok))){$('#unlockMsg').textContent='De code klopt, maar de sleutel erachter werkt niet meer. Vraag Faith om een nieuwe teamcode in te stellen.';return}
+      if($('#rememberCode').checked)setToken(tok);else{try{sessionStorage.setItem(TKEY,tok)}catch(_){}}
+      $('#codeInput').value='';canWrite=true;applyWrite();renderEditBar();setStatus('Bewerkmodus aan. Wijzigingen staan direct online.');await refresh(true);refreshAll();renderTeam();
+    }finally{btn.disabled=false;btn.textContent='Ontgrendelen'}
+  });
+  $('#setupForm').addEventListener('submit',async e=>{
+    e.preventDefault();const msg=$('#setupMsg');msg.classList.remove('err');
+    const tok=$('#setupToken').value.trim(),c1=$('#setupCode').value.trim(),c2=$('#setupCode2').value.trim();
+    if(!tok||!c1){msg.textContent='Vul de sleutel en de code in.';msg.classList.add('err');return}
+    if(c1!==c2){msg.textContent='De twee codes zijn niet hetzelfde.';msg.classList.add('err');return}
+    if(c1.length<10){msg.textContent='Kies een langere code, minstens 10 tekens (bijv. drie woorden met streepjes).';msg.classList.add('err');return}
+    const btn=e.target.querySelector('button');btn.disabled=true;msg.textContent='Sleutel controleren…';
+    try{
+      if(!(await canPush(tok))){msg.textContent='Deze sleutel heeft geen schrijfrechten op '+CFG.owner+'/'+CFG.repo+'.';msg.classList.add('err');return}
+      const sec=await encryptToken(tok,c1);
+      const url=`https://api.github.com/repos/${CFG.owner}/${CFG.repo}/contents/secret.json`;
+      let oldSha;const g=await fetch(url+'?ref='+CFG.branch,{headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'},cache:'no-store'});if(g.ok)oldSha=(await g.json()).sha;
+      const r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+        body:JSON.stringify({message:'Teamcode ingesteld',content:b64e(JSON.stringify(sec,null,1)+'\n'),sha:oldSha,branch:CFG.branch})});
+      if(!r.ok){msg.textContent='Opslaan mislukt (GitHub gaf code '+r.status+').';msg.classList.add('err');return}
+      ['setupToken','setupCode','setupCode2'].forEach(id=>$('#'+id).value='');
+      setToken(tok);canWrite=true;applyWrite();renderEditBar();refreshAll();renderTeam();
+      msg.textContent='Teamcode opgeslagen. Je teamgenoten kunnen over ongeveer een minuut ontgrendelen met deze code. Jij staat al in bewerkmodus.';
+    }finally{btn.disabled=false}
+  });
   function refreshAll(){renderTasks();renderMilestones();renderLog();renderWeeks();renderTeller()}
 
   db=store;
@@ -815,7 +904,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   db.collection('reflecties').onSnapshot(s=>{refl=s.docs.map(x=>({id:x.id,...x.data()}));renderTeam()});
   db.collection('weeks').onSnapshot(s=>{weekGoals={};s.docs.forEach(x=>weekGoals[x.id]=x.data());renderWeeks()});
   db.doc('meta/teller').onSnapshot(s=>{teller={...s.data()};renderTeller()});
-  canWrite=false;applyWrite();
+  canWrite=!!getToken();applyWrite();renderEditBar();
   setStatus('Planning laden…');
   refresh();
   setInterval(()=>{if(!document.hidden)refresh(true);updateSync()},120000);
