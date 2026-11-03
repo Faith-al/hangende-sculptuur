@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T10:10:06.511Z",
+ "updatedAt": "2026-11-03T10:10:48.220Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -159,6 +159,16 @@
    "member": "Edgar",
    "next": "Verder duiken in mogelijkheden voor knooppunten los te krijgen/standalone zonder de buizen zelf en of dat überhaupt mogelijk is of anders kijken naar andere mogelijkheden.",
    "result": "onderweg"
+  },
+  {
+   "id": "mw0j1xnhw0adw",
+   "member": "Lieke",
+   "group": "",
+   "date": "2026-10-29",
+   "done": "wat ik heb gedaan: Grasshopper script gemaakt voor koppel stukken qua grip en dikte, test modellen opgezet en geprint.",
+   "result": "geslaagd",
+   "next": "Grasshopper script gemaakt voor koppeling later met alle kokers, kleine opzet van het idee daarga ik verder mee.",
+   "at": 1793700647837
   }
  ],
  "weeks": {
