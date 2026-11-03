@@ -185,7 +185,12 @@ textarea{resize:vertical;min-height:64px}
 .weeks{display:grid;gap:14px}
 .week{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;min-width:0}
 .week.now{border-color:var(--fg);border-width:2px}
-.week-head{display:flex;justify-content:flex-start;align-items:baseline;gap:12px}
+.week-head{display:flex;justify-content:flex-start;align-items:baseline;gap:12px;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer;width:100%}
+.week-head .chev{font:13px var(--f-mono);color:var(--muted);transition:transform .2s;align-self:center}
+.week.closed .week-head .chev{transform:rotate(-90deg)}
+.week-head .wk-sum{margin-left:auto;font:12px var(--f-mono);color:var(--muted)}
+.week.closed{padding-block:12px}
+@media (prefers-reduced-motion:reduce){.week-head .chev{transition:none}}
 .week-head .range{font:12px var(--f-mono);color:var(--muted)}
 .wk-body{display:grid;grid-template-columns:74px repeat(3,minmax(0,1fr)) minmax(0,1.1fr);gap:6px}
 .lpcol{display:grid;grid-template-rows:1fr 1fr;gap:6px;min-width:0}
@@ -347,11 +352,12 @@ textarea{resize:vertical;min-height:64px}
 @media (prefers-reduced-motion:reduce){.fold .chev{transition:none}}
 .me-next h3{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 0}
 
-#feedWrap{position:relative}
-#feedWrap.clamp{overflow:hidden}
-#feedWrap.clamp::after{content:"";position:absolute;left:0;right:0;bottom:0;height:64px;background:linear-gradient(transparent,var(--surface-solid));pointer-events:none}
-.feed-acts{display:flex;gap:8px;flex-wrap:wrap}
-.feed-acts:has(button:not([hidden]))::before{content:none}
+#feedWrap{overflow-y:auto;overscroll-behavior:contain;padding-right:8px;margin-right:-8px;scrollbar-width:thin;scrollbar-color:rgba(220,232,247,.35) transparent}
+#feedWrap::-webkit-scrollbar{width:8px}
+#feedWrap::-webkit-scrollbar-thumb{background:rgba(220,232,247,.3);border-radius:4px}
+#feedWrap::-webkit-scrollbar-track{background:transparent}
+#feedWrap:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#feedMore{margin:8px 0 4px}
 
 details.rules{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
 details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:17px}
@@ -410,8 +416,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     </div>
     <div class="hp" id="feedPanel">
       <div class="hp-head"><h2>Wat er gebeurt</h2><span class="newcount" id="newCount"></span></div>
-      <div id="feedWrap"><div id="feed"></div></div>
-      <div class="feed-acts"><button type="button" class="linkbtn" id="feedExpand" aria-controls="feedWrap" aria-expanded="false" hidden>Toon alles ▾</button><button type="button" class="linkbtn" id="feedMore" hidden>Meer tonen</button></div>
+      <div id="feedWrap" tabindex="0" aria-label="Activiteiten, scrollbaar"><div id="feed"></div><button type="button" class="linkbtn" id="feedMore" hidden>Oudere tonen</button></div>
+
     </div>
   </section>
 
@@ -627,20 +633,26 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   $('#schooldagen').textContent=WEEKS.flatMap(w=>w.days).filter(d=>dayKind(d)==='school').length+' schooldagen';
 
   const weekRefs={};
+  function wkState(){try{return JSON.parse(localStorage.getItem('hs-weeks')||'{}')}catch(_){return {}}}
+  function isWeekOpen(w){const st=wkState();if(w.id in st)return !!st[w.id];return w.days[4]>=ymd(today())}
+  function applyWeekOpen(w){const r=weekRefs[w.id];if(!r||!r.head)return;const o=isWeekOpen(w);r.body.hidden=!o;r.head.setAttribute('aria-expanded',String(o));r.card.classList.toggle('closed',!o)}
   function buildWeeks(){
     const box=$('#weeks');const t0=ymd(today());
     for(const w of WEEKS){
       const card=el('div','week'+(w.days.includes(t0)?' now':''));
       const f=parseDate(w.days[0]),l=parseDate(w.days[4]);
-      const head=el('div','week-head');head.append(el('h3',null,'Week '+w.nr),el('span','range',f.getDate()+' '+f.toLocaleDateString('nl-NL',{month:'short'})+' – '+l.getDate()+' '+l.toLocaleDateString('nl-NL',{month:'short'})));
-      const body=el('div','wk-body');
+      const head=el('button','week-head');head.type='button';head.setAttribute('aria-controls','wkb-'+w.id);
+      const sum=el('span','wk-sum');
+      head.append(el('span','chev','▾'),el('h3',null,'Week '+w.nr),el('span','range',f.getDate()+' '+f.toLocaleDateString('nl-NL',{month:'short'})+' – '+l.getDate()+' '+l.toLocaleDateString('nl-NL',{month:'short'})),sum);
+      const body=el('div','wk-body');body.id='wkb-'+w.id;
+      head.addEventListener('click',()=>{const st=wkState();st[w.id]=!isWeekOpen(w);try{localStorage.setItem('hs-weeks',JSON.stringify(st))}catch(_){}applyWeekOpen(w)});
       const lp=el('div','lpcol');const big=[0,1,2].map(()=>el('div','day big'));
       const gc=el('div','wk-goal');gc.append(el('span','eyebrow','Weekdoel'));
       const ta=el('textarea','goal');ta.id='goal-'+w.id;ta.setAttribute('aria-label','Weekdoel week '+w.nr);ta.placeholder='Weekdoel…';ta.maxLength=600;
       ta.addEventListener('change',()=>{if(!db)return;const v=ta.value.trim();if(((weekGoals[w.id]||{}).goal||'')===v)return;
         weekGoals[w.id]={...(weekGoals[w.id]||{}),goal:v};db.doc('weeks/'+w.id).set({goal:v}).catch(writeFail)});
       gc.append(ta);body.append(lp,...big,gc);
-      card.append(head,body);box.append(card);weekRefs[w.id]={lp,big,ta,card};
+      card.append(head,body);box.append(card);weekRefs[w.id]={lp,big,ta,card,head,body,sum};applyWeekOpen(w);
     }
   }
   function fillDay(c,ds,small){
@@ -668,6 +680,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     for(const w of WEEKS){
       const {lp,big,ta,card}=weekRefs[w.id];
       card.classList.toggle('now',w.days.includes(t0));
+      {const r=weekRefs[w.id];const wt=tasks.filter(t=>w.days.includes(t.due));const dn=wt.filter(t=>t.status==='klaar').length;const ms=milestones.filter(m=>w.days.includes(m.date)).length;
+        r.sum.textContent=[wt.length?`${dn}/${wt.length} klaar`:'geen taken',ms?(ms>1?ms+' mijlpalen':'1 mijlpaal'):''].filter(Boolean).join(' · ');applyWeekOpen(w)}
       lp.innerHTML='';[0,1].forEach(i=>{const c=el('div');fillDay(c,w.days[i],true);lp.append(c)});
       big.forEach((c,i)=>fillDay(c,w.days[i+2],false));
       if(document.activeElement!==ta)ta.value=(weekGoals[w.id]&&weekGoals[w.id].goal)||'';
@@ -1002,7 +1016,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   presetMember();$('#meSel').addEventListener('change',presetMember);
 
   /* ---------- Wat er gebeurt ---------- */
-  const SEENKEY='hs-seen';let seenBefore=0,feedLimit=8,feedOpen=false;
+  const SEENKEY='hs-seen';let seenBefore=0,feedLimit=15;
   try{seenBefore=+localStorage.getItem(SEENKEY)||0}catch(_){}
   const pageOpened=Date.now();
   function saveSeen(){try{localStorage.setItem(SEENKEY,String(Date.now()))}catch(_){}}
@@ -1024,7 +1038,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const box=$('#feed');if(!box)return;box.innerHTML='';const all=feedEvents();
     const nNew=seenBefore?all.filter(e=>e.at>seenBefore).length:0;$('#newCount').textContent=nNew?nNew+' nieuw sinds je laatst keek':'';
     if(!all.length){box.append(el('p','me-empty','Hier verschijnen updates, foto\'s en afgeronde taken van het team.'));requestAnimationFrame(fitFeed);return}
-    for(const e of all.slice(0,feedOpen?feedLimit:12)){
+    for(const e of all.slice(0,feedLimit)){
       const row=el('div','fe');const av=el('div','av '+(e.team||''),(e.who||'?')[0]==='T'&&e.who.startsWith('Team')?e.who.split(' ')[1][0]:(e.who||'✓')[0]);av.setAttribute('aria-hidden','true');
       const body=el('div','fe-t');
       if(e.kind==='refl'){const r=e.r;const h=el('div');h.append(el('b',null,e.who));if(r.result)h.append(el('span','tagx '+r.result,r.result));if(seenBefore&&e.at>seenBefore)h.append(el('span','newtag','NIEUW'));
@@ -1033,21 +1047,17 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       else if(e.kind==='done'){const h=el('div');h.append(el('b',null,e.who||'Iemand'),' rondde een taak af');if(seenBefore&&e.at>seenBefore)h.append(el('span','newtag','NIEUW'));body.append(h,el('small',null,e.t.title+' · '+when(e.at)))}
       else{const h=el('div');h.append('Nieuwe taak voor ',el('b',null,teamLabel(e.t.team)));if(seenBefore&&e.at>seenBefore)h.append(el('span','newtag','NIEUW'));body.append(h,el('small',null,e.t.title+(e.t.due?' · '+fmtDate(e.t.due):'')))}
       row.append(av,body);box.append(row)}
+    $('#feedMore').hidden=all.length<=feedLimit;
     requestAnimationFrame(fitFeed);
   }
-  $('#feedMore').addEventListener('click',()=>{feedLimit+=8;renderFeed()});
+  $('#feedMore').addEventListener('click',()=>{feedLimit+=15;renderFeed()});
   function fitFeed(){
-    const w=$('#feedWrap'),fp=$('#feedPanel'),mp=$('#mePanel'),btn=$('#feedExpand');if(!w||!fp||!mp)return;
-    if(feedOpen){w.style.maxHeight='';w.classList.remove('clamp');btn.hidden=false;btn.textContent='Inklappen ▴';btn.setAttribute('aria-expanded','true');$('#feedMore').hidden=!(feedEvents().length>feedLimit);return}
-    $('#feedMore').hidden=true;
+    const w=$('#feedWrap'),fp=$('#feedPanel'),mp=$('#mePanel');if(!w||!fp||!mp)return;
     const wide=matchMedia('(min-width:761px)').matches;
-    const other=fp.offsetHeight-w.offsetHeight;
-    const target=wide?Math.max(260,mp.offsetHeight-other):420;
-    w.style.maxHeight='none';const full=w.scrollHeight;
-    if(full<=target+8){w.style.maxHeight='';w.classList.remove('clamp');btn.hidden=true;return}
-    w.style.maxHeight=target+'px';w.classList.add('clamp');btn.hidden=false;btn.textContent='Toon alles ▾';btn.setAttribute('aria-expanded','false');
+    w.style.maxHeight='none';const other=fp.offsetHeight-w.offsetHeight;
+    const target=wide?Math.max(260,mp.offsetHeight-other):440;
+    w.style.maxHeight=target+'px';
   }
-  $('#feedExpand').addEventListener('click',()=>{feedOpen=!feedOpen;if(!feedOpen)feedLimit=8;renderFeed();if(!feedOpen)$('#feedPanel').scrollIntoView({block:'nearest'})});
   window.addEventListener('resize',()=>fitFeed());
   if(window.ResizeObserver)new ResizeObserver(()=>fitFeed()).observe($('#mePanel'));
 
