@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-03T09:21:39.471Z",
+ "updatedAt": "2026-11-03T09:21:49.215Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -27,7 +27,7 @@
    "due": "2026-10-30",
    "fromRefl": "02trk76dw9o31dkcl6s2",
    "kind": "taak",
-   "status": "bezig",
+   "status": "klaar",
    "team": "ontwerp",
    "title": "bespreken welke concept ze gaan doen",
    "who": ""
