@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-04T15:10:46.569Z",
+ "updatedAt": "2026-11-04T15:11:06.010Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -191,19 +191,6 @@
    "at": 1793700903469,
    "photos": [
     "photos/mw0j7ewdpfiav-mw20c48w-1.jpg"
-   ]
-  },
-  {
-   "id": "mw297i0srrvl6",
-   "member": "Faith",
-   "group": "",
-   "date": "2026-11-04",
-   "done": "Morgen bekijken hoe de protype er ziet en de grasshopper bestand te maken.",
-   "result": "onderweg",
-   "next": "",
-   "at": 1793805043707,
-   "photos": [
-    "photos/mw297i0srrvl6-1.jpg"
    ]
   }
  ],
