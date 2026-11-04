@@ -247,8 +247,8 @@ textarea{resize:vertical;min-height:64px}
 .readonly .goal{field-sizing:content;overflow:hidden}
 .status:empty{display:none}
 
-#dayDlg,#reflDlg,#editDlg{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface);color:var(--fg);width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
-#dayDlg::backdrop,#reflDlg::backdrop,#editDlg::backdrop{background:rgba(20,24,21,.45)}
+#welcomeDlg,#dayDlg,#reflDlg,#editDlg{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface-solid);color:var(--fg);width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+#welcomeDlg::backdrop,#dayDlg::backdrop,#reflDlg::backdrop,#editDlg::backdrop{background:rgba(20,24,21,.45)}
 #editForm{display:grid;gap:12px;padding:20px}
 .ed-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ed-who{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0}
@@ -359,6 +359,19 @@ textarea{resize:vertical;min-height:64px}
 #feedWrap:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #feedMore{margin:8px 0 4px}
 
+.wc{padding:22px;display:grid;gap:12px}
+.wc-step{display:grid;gap:12px}
+.wc-step p{margin:0}
+.wc-step h3{font-size:22px}
+.wc-names{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.wc-names button{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--inner);color:var(--fg);font:600 14px var(--f-body);cursor:pointer;text-align:left}
+.wc-names button:hover,.wc-names button:focus-visible{border-color:var(--accent)}
+.wc-names .avatar{width:26px;height:26px;font-size:12px}
+.wc-tips{margin:0;padding-left:20px;display:grid;gap:8px;font-size:14px}
+.lockhint{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;border:1px dashed var(--line);border-radius:8px;font-size:13.5px;color:var(--muted)}
+.dropzone{border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:13px;color:var(--muted);text-align:center}
+.dropzone.over{border-color:var(--accent);color:var(--fg);background:var(--inner)}
+
 details.rules{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
 details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:17px}
 .rules ul{margin:12px 0 0;padding-left:20px;display:grid;gap:4px;max-width:70ch}
@@ -381,7 +394,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         <div><span>Knopen geprint</span><b id="bsK">–</b><span class="stepper bstep"><button type="button" data-step="knopenGeprint" data-d="-1" aria-label="Eén knoop minder">−</button><button type="button" data-step="knopenGeprint" data-d="1" aria-label="Eén knoop meer">+</button></span></div>
       </div>
       <div class="editbar">
-        <div id="editOff"><span class="muted">Alleen bekijken</span><button type="button" class="linkbtn" id="btnUnlock">Bewerken met teamcode</button></div>
+        <div id="editOff"><span class="muted">Alleen bekijken</span><button type="button" class="linkbtn" id="btnUnlock">Teamcode invullen</button><button type="button" class="linkbtn" id="btnHelp" title="Uitleg">? Hoe werkt het</button></div>
         <div id="editOn" hidden><span class="onpill">Bewerkmodus</span><button type="button" class="linkbtn" id="btnLock">Vergrendelen</button></div>
         <span class="muted" id="syncInfo"></span><button type="button" class="linkbtn" id="btnRefresh" title="Haal de nieuwste stand op">↻ Ververs</button>
       </div>
@@ -582,6 +595,37 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <div class="ed-actions"><button class="btn" type="submit" id="rdSave">Opslaan</button><button class="linkbtn" type="button" id="rdCancel">Annuleren</button></div>
     </form>
   </dialog>
+<dialog id="welcomeDlg" aria-labelledby="wcTitle">
+  <div class="wc">
+    <div class="wc-step" data-step="1">
+      <span class="eyebrow">Stap 1 van 3</span>
+      <h3 id="wcTitle">Welkom bij de planning!</h3>
+      <p>Hier zie je wat het team doet, wat jij moet doen en hoe het gaat. Wie ben jij?</p>
+      <div class="wc-names" id="wcNames"></div>
+      <p class="muted" style="font-size:13px;margin:0">Dit wordt alleen op dit apparaat onthouden.</p>
+    </div>
+    <form class="wc-step nolock" data-step="2" id="wcCodeForm" hidden>
+      <span class="eyebrow">Stap 2 van 3</span>
+      <h3>Teamcode invullen</h3>
+      <p>Met de <b>teamcode</b> kun je taken afvinken, je dag afsluiten en foto's toevoegen. Faith heeft de code in jullie groepsapp gezet. Zonder code kun je alleen meekijken.</p>
+      <div class="field"><label for="wcCode">Teamcode</label><input id="wcCode" type="password" autocomplete="off" placeholder="bijv. drie-woorden-code"></div>
+      <p id="wcMsg" class="status err" style="margin:0"></p>
+      <div class="ed-actions"><button class="btn" type="submit" id="wcUnlock">Ontgrendelen</button><button class="linkbtn" type="button" id="wcSkip">Ik heb de code nog niet</button></div>
+    </form>
+    <div class="wc-step" data-step="3" hidden>
+      <span class="eyebrow">Stap 3 van 3</span>
+      <h3 id="wcDoneTitle">Klaar!</h3>
+      <ul class="wc-tips">
+        <li><b>Mijn pagina</b> laat jouw taken zien. Vink ze af als ze klaar zijn.</li>
+        <li>Aan het eind van de dag: klik op <b>Dag afsluiten</b> en vertel kort wat je hebt gedaan. Een foto kun je ook plakken.</li>
+        <li>Iets nieuws te doen? Klik op <b>+ Taak</b>.</li>
+        <li>Bij <b>Wat er gebeurt</b> zie je wat er nieuw is sinds je laatste bezoek.</li>
+      </ul>
+      <p class="muted" id="wcLockedNote" style="font-size:13px;margin:0" hidden>Je kunt de code later invullen met de knop <b>Teamcode invullen</b> bovenaan.</p>
+      <div class="ed-actions"><button class="btn" type="button" id="wcDone">Aan de slag</button></div>
+    </div>
+  </div>
+</dialog>
 <dialog id="dayDlg" aria-labelledby="dayTitle">
   <form id="dayForm" class="nolock" method="dialog" style="display:grid;gap:12px;padding:20px">
     <h3 id="dayTitle">Dag afsluiten</h3>
@@ -665,7 +709,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     if(due.length){const ul=el('ul','dtasks');
       for(const t of due){const kd=t.kind==='taak'?'taak':'deadline';const li=el('li',t.team+' '+kd+(t.status==='klaar'?' done':''));
         const cb=el('input','dt-cb');cb.type='checkbox';cb.checked=t.status==='klaar';cb.disabled=!canWrite;cb.id='cb-'+t.id;
-        cb.title=canWrite?(cb.checked?'Klik om weer open te zetten':'Klik als deze taak klaar is'):'Klik bovenaan op Bewerken met teamcode om af te vinken';
+        cb.title=canWrite?(cb.checked?'Klik om weer open te zetten':'Klik als deze taak klaar is'):'Vul bovenaan de teamcode in om af te vinken';
         cb.setAttribute('aria-label','Klaar: '+t.title);
         cb.addEventListener('change',()=>{if(!db||!canWrite)return;cb.disabled=true;li.classList.toggle('done',cb.checked);
           db.doc('tasks/'+t.id).update(statusPatch(cb.checked?'klaar':'open')).catch(e=>{cb.checked=!cb.checked;li.classList.toggle('done',cb.checked);cb.disabled=false;writeFail(e)})});
@@ -926,7 +970,18 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   }
   function previewFiles(input,box){box.innerHTML='';[...(input.files||[])].slice(0,4).forEach(f=>{const d=el('div','pv');const i=el('img');i.src=URL.createObjectURL(f);i.alt='';d.append(i);box.append(d)})}
   $('#r-photos').addEventListener('change',()=>previewFiles($('#r-photos'),$('#r-prev')));
+  function addImages(input,box,files){const imgs=[...files].filter(f=>f.type&&f.type.startsWith('image/'));if(!imgs.length)return false;
+    const dt=new DataTransfer();[...(input.files||[])].forEach(f=>dt.items.add(f));
+    imgs.forEach((f,i)=>{const name=f.name&&f.name!=='image.png'?f.name:`geplakt-${Date.now()}-${i}.png`;dt.items.add(new File([f],name,{type:f.type}))});
+    input.files=dt.files;previewFiles(input,box);return true}
+  function pasteTarget(container,input,box){
+    container.addEventListener('paste',e=>{const fs=e.clipboardData&&e.clipboardData.files;if(fs&&fs.length&&addImages(input,box,fs)){e.preventDefault();setStatus('Afbeelding geplakt.')}});
+    const zone=el('div','dropzone','Sleep een foto hierheen, of plak er een met Ctrl+V (Cmd+V op een Mac)');input.insertAdjacentElement('afterend',zone);
+    zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over')});zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+    zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('over');addImages(input,box,e.dataTransfer.files)});
+  }
   $('#rd-photos').addEventListener('change',()=>previewFiles($('#rd-photos'),$('#rd-prev')));
+  pasteTarget($('#reflForm'),$('#r-photos'),$('#r-prev'));pasteTarget($('#reflEditForm'),$('#rd-photos'),$('#rd-prev'));
   function renderRdCur(){const box=$('#rd-cur');box.innerHTML='';rdPhotos.forEach((p,i)=>{const d=el('div','pv');d.append(photoImg(p));const x=el('button','x','×');x.type='button';x.setAttribute('aria-label','Foto weghalen');x.addEventListener('click',()=>{rdPhotos.splice(i,1);renderRdCur()});d.append(x);box.append(d)})}
 
   /* ---------- Mijn pagina ---------- */
@@ -961,7 +1016,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     else{const ul=el('ul','me-tasks');
       for(const t of list){const li=el('li',t.status==='klaar'?'done':'');
         const cb=el('input','dt-cb');cb.type='checkbox';cb.checked=t.status==='klaar';cb.disabled=!canWrite;cb.id='me-cb-'+t.id;cb.setAttribute('aria-label','Klaar: '+t.title);
-        cb.title=canWrite?'Afvinken als het klaar is':'Klik bovenaan op Bewerken met teamcode om af te vinken';
+        cb.title=canWrite?'Afvinken als het klaar is':'Vul bovenaan de teamcode in om af te vinken';
         cb.addEventListener('change',()=>{if(!db||!canWrite)return;cb.disabled=true;li.classList.toggle('done',cb.checked);db.doc('tasks/'+t.id).update(statusPatch(cb.checked?'klaar':'open')).catch(e=>{cb.checked=!cb.checked;cb.disabled=false;writeFail(e)})});
         const tx=el('div');tx.style.minWidth='0';tx.append(el('span','mt-t',t.title));
         const meta=el('span','mt-m');const parts=[];
@@ -977,15 +1032,15 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       const open=nexts.filter(r=>!r.nextDone),dn=nexts.filter(r=>r.nextDone).slice(0,2);const ul=el('ul','me-tasks');
       for(const r of [...open,...dn]){const li=el('li',r.nextDone?'done':'');
         const cb=el('input','dt-cb');cb.type='checkbox';cb.checked=!!r.nextDone;cb.disabled=!canWrite;cb.id='nx-'+r.id;cb.setAttribute('aria-label','Gedaan: '+r.next);
-        cb.title=canWrite?'Afvinken als je het gedaan hebt':'Klik bovenaan op Bewerken met teamcode om af te vinken';
+        cb.title=canWrite?'Afvinken als je het gedaan hebt':'Vul bovenaan de teamcode in om af te vinken';
         cb.addEventListener('change',()=>{if(!db||!canWrite)return;cb.disabled=true;li.classList.toggle('done',cb.checked);
           db.doc('reflecties/'+r.id).update({nextDone:cb.checked}).catch(e=>{cb.checked=!cb.checked;li.classList.toggle('done',cb.checked);cb.disabled=false;writeFail(e)})});
         const tx=el('div');tx.style.minWidth='0';tx.append(el('span','mt-t',r.next),el('span','mt-m','uit je update van '+fmtDate(r.date)));
         li.append(cb,tx);ul.append(li)}
       sec.append(ul);box.append(sec)}
     if(canWrite){const a=el('div','me-acts');const b=el('button','btn',todayRefl?'Update van vandaag aanpassen':'Dag afsluiten');b.type='button';
-      b.addEventListener('click',()=>todayRefl?openReflEdit(todayRefl.id):openDay());a.append(b);box.append(a)}
-    else{const p=el('p','me-empty','Klik bovenaan op Bewerken met teamcode om af te vinken en je dag af te sluiten.');p.style.fontSize='13px';box.append(p)}
+      b.addEventListener('click',()=>todayRefl?openReflEdit(todayRefl.id):openDay());const nt=el('button','linkbtn','+ Taak');nt.type='button';nt.addEventListener('click',()=>openNewTask());a.append(b,nt);box.append(a)}
+    else{const h=el('div','lockhint');h.append(el('span',null,'Met de teamcode kun je afvinken en je dag afsluiten.'));const b=el('button','linkbtn','Teamcode invullen');b.type='button';b.addEventListener('click',()=>openWelcome(2));h.append(b);box.append(h)}
   }
 
   /* ---------- Dag afsluiten ---------- */
@@ -997,6 +1052,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   }
   $('#dayCancel').addEventListener('click',()=>$('#dayDlg').close());
   $('#day-photos').addEventListener('change',()=>previewFiles($('#day-photos'),$('#day-prev')));
+  pasteTarget($('#dayForm'),$('#day-photos'),$('#day-prev'));
   $('#dayForm').addEventListener('submit',async e=>{
     e.preventDefault();const me=getMe();if(!db||!me)return;
     const done=$('#day-done').value.trim();if(!done){$('#dayMsg').textContent='Vul in wat je vandaag hebt gedaan.';return}
@@ -1014,6 +1070,22 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   });
   function presetMember(){const me=getMe(),sel=$('#r-member');if(me&&sel&&!sel.value)sel.value=me}
   presetMember();$('#meSel').addEventListener('change',presetMember);
+
+  /* ---------- Welkom ---------- */
+  function wcShow(n){document.querySelectorAll('#welcomeDlg .wc-step').forEach(x=>x.hidden=x.dataset.step!=String(n));
+    const f={1:'#wcNames button',2:'#wcCode',3:'#wcDone'}[n];setTimeout(()=>{const e=document.querySelector(f);if(e)e.focus()},30)}
+  (()=>{const box=$('#wcNames');MEMBERS.forEach(m=>{const b=el('button');b.type='button';const av=el('span','avatar '+(m.teams.length>1?'beide':m.teams[0]),m.name[0]);b.append(av,m.name);
+    b.addEventListener('click',()=>{setMe(m.name);$('#meSel').value=m.name;presetMember();renderMe();if(canWrite){finishWc()}else wcShow(2)});box.append(b)})})();
+  function openWelcome(step){const d=$('#welcomeDlg');$('#wcMsg').textContent='';wcShow(step||1);if(d.showModal)d.showModal();else d.setAttribute('open','')}
+  function finishWc(){$('#wcLockedNote').hidden=canWrite;$('#wcDoneTitle').textContent=getMe()?('Klaar, '+getMe()+'!'):'Klaar!';wcShow(3)}
+  $('#wcCodeForm').addEventListener('submit',async e=>{e.preventDefault();const c=$('#wcCode').value;if(!c.trim()){$('#wcMsg').textContent='Vul de code in.';return}
+    const b=$('#wcUnlock');b.disabled=true;b.textContent='Controleren…';
+    try{const err=await tryUnlock(c,true);$('#wcMsg').textContent=err;if(!err){$('#wcCode').value='';finishWc()}}finally{b.disabled=false;b.textContent='Ontgrendelen'}});
+  $('#wcSkip').addEventListener('click',finishWc);
+  $('#wcDone').addEventListener('click',()=>{try{localStorage.setItem('hs-welcomed','1')}catch(_){}$('#welcomeDlg').close()});
+  $('#welcomeDlg').addEventListener('close',()=>{try{localStorage.setItem('hs-welcomed','1')}catch(_){}});
+  $('#btnHelp').addEventListener('click',()=>openWelcome(getMe()?(canWrite?3:2):1));
+  setTimeout(()=>{let seen=false;try{seen=localStorage.getItem('hs-welcomed')==='1'}catch(_){}if(!seen&&!getMe())openWelcome(1)},600);
 
   /* ---------- Wat er gebeurt ---------- */
   const SEENKEY='hs-seen';let seenBefore=0,feedLimit=15;
@@ -1074,7 +1146,15 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const box=$('#ed-whoList');box.innerHTML='';
     MEMBERS.filter(m=>team==='beide'||m.teams.includes(team)).forEach(m=>{const l=el('label');const c=el('input');c.type='checkbox';c.value=m.name;c.name='who';c.checked=selected.includes(m.name.toLowerCase());l.append(c,m.name);box.append(l)});
   }
+  function openNewTask(){
+    if(!canWrite)return;const me=getMe();editingId='__new__';$('#edTitle').textContent='Nieuwe taak';
+    const team=me?memberTeam(me):'productie';$('#ed-title').value='';$('#ed-team').value=team;$('#ed-status').value='open';$('#ed-kind').value='taak';
+    const t0=ymd(today());$('#ed-due').value=dayKind(t0)==='school'?t0:(nextSchoolDay(t0)||'');$('#edMsg').textContent='';
+    $('#ed-all').checked=false;fillWho(team,me?[me.toLowerCase()]:[]);syncAll();
+    const d=$('#editDlg');if(d.showModal)d.showModal();else d.setAttribute('open','');$('#ed-title').focus();
+  }
   function openEdit(id){
+    $('#edTitle').textContent='Taak bewerken';
     const t=tasks.find(x=>x.id===id);if(!t||!canWrite)return;editingId=id;
     $('#ed-title').value=t.title||'';$('#ed-team').value=t.team||'ontwerp';$('#ed-status').value=t.status||'open';
     $('#ed-kind').value=t.kind==='taak'?'taak':'deadline';$('#ed-due').value=t.due||'';$('#edMsg').textContent='';
@@ -1089,9 +1169,11 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     e.preventDefault();if(!editingId||!db)return;
     const title=$('#ed-title').value.trim();if(!title){$('#edMsg').textContent='Vul een naam voor de taak in.';return}
     const who=$('#ed-all').checked?'team':[...document.querySelectorAll('#ed-whoList input:checked')].map(c=>c.value).join(', ');
-    const old=tasks.find(x=>x.id===editingId)||{};const st=$('#ed-status').value;const upd={title,team:$('#ed-team').value,kind:$('#ed-kind').value,due:$('#ed-due').value||'',who,...(st!==old.status?statusPatch(st):{})};
+    const old=editingId==='__new__'?{status:'open'}:(tasks.find(x=>x.id===editingId)||{});const st=$('#ed-status').value;const upd={title,team:$('#ed-team').value,kind:$('#ed-kind').value,due:$('#ed-due').value||'',who,...(st!==old.status?statusPatch(st):{})};
     const btn=$('#edSave');btn.disabled=true;btn.textContent='Opslaan…';
-    try{await db.doc('tasks/'+editingId).update(upd);$('#editDlg').close();editingId=null;setStatus('Taak bijgewerkt.')}
+    try{if(editingId==='__new__'){await db.collection('tasks').add({...upd,status:st,created:Date.now(),...(st==='klaar'?statusPatch('klaar'):{})});setStatus('Taak toegevoegd.')}
+      else{await db.doc('tasks/'+editingId).update(upd);setStatus('Taak bijgewerkt.')}
+      $('#editDlg').close();editingId=null}
     catch(err){$('#edMsg').textContent='Opslaan lukte niet. Probeer het opnieuw.';writeFail(err)}
     finally{btn.disabled=false;btn.textContent='Opslaan'}
   });
@@ -1327,21 +1409,24 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     try{const r=await fetch(`https://api.github.com/repos/${CFG.owner}/${CFG.repo}`,{headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'}});
       if(!r.ok)return false;const j=await r.json();return !!(j.permissions&&j.permissions.push)}catch(_){return false}
   }
-  function renderEditBar(){const h=$('#weekHint');if(h)h.textContent=canWrite?'Taak klaar? Vink het hokje aan in het blokje van die dag. Klik op een taak om hem te bewerken.':'Taak klaar? Klik bovenaan op Bewerken met teamcode en vink het hokje aan in het blokje van die dag.';$('#editOn').hidden=!canWrite;$('#editOff').hidden=canWrite;$('#unlockPanel').hidden=true}
+  function renderEditBar(){const h=$('#weekHint');if(h)h.textContent=canWrite?'Taak klaar? Vink het hokje aan in het blokje van die dag. Klik op een taak om hem te bewerken.':'Taak klaar? Vul bovenaan de teamcode in en vink het hokje aan in het blokje van die dag.';$('#editOn').hidden=!canWrite;$('#editOff').hidden=canWrite;$('#unlockPanel').hidden=true}
   $('#btnUnlock').addEventListener('click',()=>{$('#unlockPanel').hidden=false;$('#codeInput').focus()});
   $('#btnUnlockCancel').addEventListener('click',()=>{$('#unlockPanel').hidden=true});
   $('#btnLock').addEventListener('click',()=>{setToken('');try{sessionStorage.removeItem(TKEY)}catch(_){};canWrite=false;applyWrite();renderEditBar();refreshAll();renderTeam();setStatus('Vergrendeld. Je bekijkt de planning nu alleen.')});
+  async function tryUnlock(code,remember){
+    const sec=await loadSecret();
+    if(!sec)return 'Er is nog geen teamcode ingesteld. Faith kan dat doen onder Beheer onderaan de pagina.';
+    let tok;try{tok=await decryptToken(sec,code)}catch(_){return 'Deze code klopt niet. Controleer hem (let op hoofdletters en streepjes) en probeer opnieuw.'}
+    if(!(await canPush(tok)))return 'De code klopt, maar de sleutel erachter werkt niet meer. Vraag Faith om een nieuwe teamcode in te stellen.';
+    if(remember)setToken(tok);else{try{sessionStorage.setItem(TKEY,tok)}catch(_){}}
+    canWrite=true;applyWrite();renderEditBar();setStatus('Bewerkmodus aan. Wijzigingen staan direct online.');await refresh(true);refreshAll();renderTeam();
+    return '';
+  }
   $('#unlockPanel').addEventListener('submit',async e=>{
     e.preventDefault();const code=$('#codeInput').value;if(!code.trim())return;
     const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;btn.textContent='Controleren…';$('#unlockMsg').textContent='';
-    try{
-      const sec=await loadSecret();
-      if(!sec){$('#unlockMsg').textContent='Er is nog geen teamcode ingesteld. Faith kan dat doen onder Beheer onderaan de pagina.';return}
-      let tok;try{tok=await decryptToken(sec,code)}catch(_){$('#unlockMsg').textContent='Deze code klopt niet. Controleer hem en probeer opnieuw.';return}
-      if(!(await canPush(tok))){$('#unlockMsg').textContent='De code klopt, maar de sleutel erachter werkt niet meer. Vraag Faith om een nieuwe teamcode in te stellen.';return}
-      if($('#rememberCode').checked)setToken(tok);else{try{sessionStorage.setItem(TKEY,tok)}catch(_){}}
-      $('#codeInput').value='';canWrite=true;applyWrite();renderEditBar();setStatus('Bewerkmodus aan. Wijzigingen staan direct online.');await refresh(true);refreshAll();renderTeam();
-    }finally{btn.disabled=false;btn.textContent='Ontgrendelen'}
+    try{const err=await tryUnlock(code,$('#rememberCode').checked);$('#unlockMsg').textContent=err;if(!err)$('#codeInput').value=''}
+    finally{btn.disabled=false;btn.textContent='Ontgrendelen'}
   });
   $('#setupForm').addEventListener('submit',async e=>{
     e.preventDefault();const msg=$('#setupMsg');msg.classList.remove('err');
