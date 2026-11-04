@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-04T21:16:40.853Z",
+ "updatedAt": "2026-11-04T21:18:15.185Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -216,6 +216,16 @@
    "photos": [
     "photos/mw29gsbb8admd-1.jpg"
    ]
+  },
+  {
+   "id": "mw2mc4lozk28p",
+   "member": "Lieke",
+   "group": "",
+   "date": "2026-11-04",
+   "done": "Ik heb een test print gedaan om te controleren of de grip goed genoeg is als er een complete bol aan vast ipv alleen 1 koker. Daarna met elkaar besproken en verder gegaan met een nieuw script en die vervolgens geprint.",
+   "result": "onderweg",
+   "next": "Nieuwe print maken en zeker weten dat die gaat werken",
+   "at": 1793827094604
   }
  ],
  "weeks": {
