@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-04T21:18:26.137Z",
+ "updatedAt": "2026-11-04T21:18:28.286Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -40,10 +40,12 @@
    "due": "2026-11-04",
    "fromRefl": "c4g18cbrusjmdtd6fk72",
    "kind": "taak",
-   "status": "open",
+   "status": "klaar",
    "team": "productie",
    "title": "ze gaan de grotere printer testen om te zien wat de verschillen tussen de machines zijn, Verder met grashopper en sketchup testen om alvast makkelijk een model te maken.",
-   "who": "team"
+   "who": "team",
+   "doneAt": 1793827107858,
+   "doneBy": "Lieke"
   },
   {
    "id": "start-printen",
