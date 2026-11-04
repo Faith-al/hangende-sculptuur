@@ -331,7 +331,9 @@ textarea{resize:vertical;min-height:64px}
 #lightbox{border:0;padding:0;background:transparent;max-width:min(96vw,1200px);max-height:94vh}
 #lightbox::backdrop{background:rgba(5,15,30,.85)}
 #lightbox img{display:block;max-width:100%;max-height:86vh;border-radius:8px}
-#lightbox .linkbtn{margin:10px auto 0;display:block}
+#lightbox .lb-acts{display:flex;gap:8px;justify-content:center;margin-top:10px}
+#lightbox .lb-del{color:var(--bad);border-color:var(--bad)}
+#lightbox .lb-del.arm{background:var(--bad);color:var(--ink)}
 @media (max-width:760px){.home{grid-template-columns:1fr}}
 
 .me-day{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;font-size:14px;border:1px solid var(--line)}
@@ -643,7 +645,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     <div class="ed-actions"><button class="btn" type="submit" id="daySave">Opslaan</button><button class="linkbtn" type="button" id="dayCancel">Annuleren</button></div>
   </form>
 </dialog>
-<dialog id="lightbox" aria-label="Foto"><img id="lbImg" alt=""><button type="button" class="linkbtn" id="lbClose">Sluiten</button></dialog>
+<dialog id="lightbox" aria-label="Foto"><img id="lbImg" alt=""><div class="lb-acts"><button type="button" class="linkbtn" id="lbClose">Sluiten</button><button type="button" class="linkbtn lb-del" id="lbDel" hidden>Foto verwijderen</button></div><p class="status err" id="lbMsg" style="margin:6px 0 0;text-align:center"></p></dialog>
 <script>
 (function(){
   const $=s=>document.querySelector(s);
@@ -852,7 +854,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     if(r.result){const dt=el('dt','d');dt.append(el('i'),'Hoe het ging');const dd=el('dd');dd.append(el('span','res '+r.result,r.result.charAt(0).toUpperCase()+r.result.slice(1)));dl.append(dt,dd)}
     [['d','Gedaan vandaag',r.done],['g','Ging goed',r.good],['b','Ging minder goed',r.bad],['n','Morgen',r.next]].forEach(([c,l,v])=>{
       if(!v)return;const dt=el('dt',c);dt.append(el('i'),l);dl.append(dt,el('dd',null,v))});
-    if(r.photos&&r.photos.length)dl.append(thumbs(r.photos));
+    if(r.photos&&r.photos.length)dl.append(thumbs(r.photos,r.id));
     return dl;
   }
   function delBtn(r){
@@ -904,6 +906,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const upd={date:$('#rd-date').value||r.date,done,result:res,next:$('#rd-next').value.trim()};
     const btn=$('#rdSave');if(btn.disabled)return;btnBusy(btn,'Opslaan…');let ok=false;
     try{const add=[...($('#rd-photos').files||[])].slice(0,Math.max(0,4-rdPhotos.length));
+      const removed=(r.photos||[]).filter(x=>!rdPhotos.includes(x));removed.forEach(x=>deleteFile(x).catch(()=>{}));
       upd.photos=[...rdPhotos,...(add.length?await uploadPhotos(add,id+'-'+Date.now().toString(36),btn):[])];btn.textContent='Opslaan…';
       await db.doc('reflecties/'+id).update(upd);
       if(r)await syncMorgenTask(id,{...r,...upd},r);
@@ -944,9 +947,18 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   let rdPhotos=[];
   function photoUrl(p){return `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${p}`}
   function photoImg(p){const img=el('img');img.alt='Foto';img.loading='lazy';img.src=photoUrl(p);img.addEventListener('error',()=>{if(!img.dataset.f){img.dataset.f=1;img.src=p}},{once:false});return img}
-  function thumbs(list){const g=el('div','thumbs');list.slice(0,6).forEach(p=>{const b=el('button');b.type='button';b.setAttribute('aria-label','Foto vergroten');b.append(photoImg(p));b.addEventListener('click',()=>openLightbox(p));g.append(b)});return g}
-  function openLightbox(p){const d=$('#lightbox');$('#lbImg').src=photoUrl(p);$('#lbImg').onerror=()=>{$('#lbImg').onerror=null;$('#lbImg').src=p};if(d.showModal)d.showModal();else d.setAttribute('open','')}
+  function thumbs(list,rid){const g=el('div','thumbs');list.slice(0,6).forEach(p=>{const b=el('button');b.type='button';b.setAttribute('aria-label','Foto vergroten');b.append(photoImg(p));b.addEventListener('click',()=>openLightbox(p,rid));g.append(b)});return g}
+  let lbCur=null,lbArm=false,lbTimer;
+  function openLightbox(p,rid){lbCur={p,rid};lbArm=false;const del=$('#lbDel');del.hidden=!(canWrite&&rid);del.textContent='Foto verwijderen';del.classList.remove('arm');$('#lbMsg').textContent='';
+    const d=$('#lightbox');$('#lbImg').src=photoUrl(p);$('#lbImg').onerror=()=>{$('#lbImg').onerror=null;$('#lbImg').src=p};if(d.showModal)d.showModal();else d.setAttribute('open','')}
   $('#lbClose').addEventListener('click',()=>$('#lightbox').close());
+  $('#lbDel').addEventListener('click',async()=>{const b=$('#lbDel');if(!lbCur||!db)return;
+    if(!lbArm){lbArm=true;b.textContent='Zeker weten? Klik nog een keer';b.classList.add('arm');clearTimeout(lbTimer);lbTimer=setTimeout(()=>{lbArm=false;b.textContent='Foto verwijderen';b.classList.remove('arm')},4000);return}
+    clearTimeout(lbTimer);b.disabled=true;b.textContent='Verwijderen…';
+    try{const r=refl.find(x=>x.id===lbCur.rid);if(r)await db.doc('reflecties/'+r.id).update({photos:(r.photos||[]).filter(x=>x!==lbCur.p)});
+      deleteFile(lbCur.p).catch(()=>{});$('#lightbox').close();setStatus('Foto verwijderd.')}
+    catch(e){$('#lbMsg').textContent='Verwijderen lukte niet. Probeer het opnieuw.';writeFail(e)}
+    finally{b.disabled=false;lbArm=false;b.classList.remove('arm');b.textContent='Foto verwijderen'}});
   $('#lightbox').addEventListener('click',e=>{if(e.target.id==='lightbox')$('#lightbox').close()});
   async function resizeImage(file,max=1600){
     let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'})}catch(_){bmp=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file)})}
@@ -961,6 +973,12 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       if(!r.ok)throw {code:r.status===401||r.status===403?'invalid_argument':'unavailable'};
     });queue=job.catch(()=>{});return job;
   }
+  function deleteFile(path){
+    const job=queue.then(async()=>{const url=`https://api.github.com/repos/${CFG.owner}/${CFG.repo}/contents/${path}`,h={Authorization:'Bearer '+getToken(),Accept:'application/vnd.github+json'};
+      const g=await fetch(url+'?ref='+CFG.branch,{headers:h,cache:'no-store'});if(!g.ok)return;const sha=(await g.json()).sha;
+      await fetch(url,{method:'DELETE',headers:{...h,'Content-Type':'application/json'},body:JSON.stringify({message:'Foto verwijderd',sha,branch:CFG.branch})});
+    });queue=job.catch(()=>{});return job;
+  }
   async function uploadPhotos(files,baseId,btn){
     const out=[];
     for(let i=0;i<files.length;i++){const msg=`Foto ${i+1} van ${files.length} uploaden…`;setStatus(msg);if(btn)btn.textContent=msg;
@@ -968,7 +986,8 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       await putFile(path,await blobB64(blob),'Foto toegevoegd');out.push(path)}
     return out;
   }
-  function previewFiles(input,box){box.innerHTML='';[...(input.files||[])].slice(0,4).forEach(f=>{const d=el('div','pv');const i=el('img');i.src=URL.createObjectURL(f);i.alt='';d.append(i);box.append(d)})}
+  function previewFiles(input,box){box.innerHTML='';[...(input.files||[])].slice(0,4).forEach((f,idx)=>{const d=el('div','pv');const i=el('img');i.src=URL.createObjectURL(f);i.alt='';d.append(i);
+    const x=el('button','x','×');x.type='button';x.setAttribute('aria-label','Deze foto weghalen');x.addEventListener('click',()=>{const dt=new DataTransfer();[...input.files].forEach((g,j)=>{if(j!==idx)dt.items.add(g)});input.files=dt.files;previewFiles(input,box)});d.append(x);box.append(d)})}
   $('#r-photos').addEventListener('change',()=>previewFiles($('#r-photos'),$('#r-prev')));
   function addImages(input,box,files){const imgs=[...files].filter(f=>f.type&&f.type.startsWith('image/'));if(!imgs.length)return false;
     const dt=new DataTransfer();[...(input.files||[])].forEach(f=>dt.items.add(f));
@@ -1115,7 +1134,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       const body=el('div','fe-t');
       if(e.kind==='refl'){const r=e.r;const h=el('div');h.append(el('b',null,e.who));if(r.result)h.append(el('span','tagx '+r.result,r.result));if(seenBefore&&e.at>seenBefore)h.append(el('span','newtag','NIEUW'));
         body.append(h,el('div',null,r.done||''));if(r.next){const n=el('small');n.textContent='Volgende keer: '+r.next;body.append(n)}
-        body.append(el('small',null,when(e.at)));if(r.photos&&r.photos.length)body.append(thumbs(r.photos))}
+        body.append(el('small',null,when(e.at)));if(r.photos&&r.photos.length)body.append(thumbs(r.photos,r.id))}
       else if(e.kind==='done'){const h=el('div');h.append(el('b',null,e.who||'Iemand'),' rondde een taak af');if(seenBefore&&e.at>seenBefore)h.append(el('span','newtag','NIEUW'));body.append(h,el('small',null,e.t.title+' · '+when(e.at)))}
       else{const h=el('div');h.append('Nieuwe taak voor ',el('b',null,teamLabel(e.t.team)));if(seenBefore&&e.at>seenBefore)h.append(el('span','newtag','NIEUW'));body.append(h,el('small',null,e.t.title+(e.t.due?' · '+fmtDate(e.t.due):'')))}
       row.append(av,body);box.append(row)}
