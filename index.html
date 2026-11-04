@@ -378,6 +378,11 @@ textarea{resize:vertical;min-height:64px}
 .dropzone{border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:13px;color:var(--muted);text-align:center}
 .dropzone.over{border-color:var(--accent);color:var(--fg);background:var(--inner)}
 
+.team-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:24px;align-items:start}
+.team-top .tsum{grid-template-columns:1fr}
+.team-top .reflform{grid-template-columns:1fr 1fr}
+@media (max-width:860px){.team-top{grid-template-columns:1fr}}
+
 details.rules{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
 details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:17px}
 .rules ul{margin:12px 0 0;padding-left:20px;display:grid;gap:4px;max-width:70ch}
@@ -537,11 +542,12 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   </div>
 
   <div class="view" id="view-team" hidden>
-    <section style="display:grid;gap:14px" aria-labelledby="tsTitle">
+    <div class="team-top">
+    <section style="display:grid;gap:14px;align-content:start" aria-labelledby="tsTitle">
       <h2 id="tsTitle">Teams</h2>
       <div class="tsum" id="teamSummary"></div>
     </section>
-    <section style="display:grid;gap:14px" aria-labelledby="rfTitle" id="reflSection">
+    <section style="display:grid;gap:14px;align-content:start" aria-labelledby="rfTitle" id="reflSection">
       <div class="team-head"><h2 id="rfTitle">Voortgang per teamlid invullen</h2><span class="muted" style="font-size:13px">Komt op de kaart van dat teamlid te staan</span></div>
       <form class="reflform" id="reflForm">
         <div class="field"><label for="r-member">Voor wie?</label><select id="r-member" name="member" required></select></div>
@@ -558,8 +564,9 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         <div class="full"><button class="btn" type="submit">Voortgang opslaan</button></div>
       </form>
     </section>
+    </div>
     <section style="display:grid;gap:14px" aria-labelledby="mbTitle">
-      <div class="team-head"><h2 id="mbTitle">Teamleden</h2><span class="muted" style="font-size:13px">Taken, voortgang en wat iedereen de volgende keer doet.</span></div>
+      <div class="team-head"><h2 id="mbTitle">Teamleden voortgang</h2><span class="muted" style="font-size:13px">Taken, voortgang en wat iedereen de volgende keer doet.</span></div>
       <div class="members" id="members"></div>
     </section>
   </div>
