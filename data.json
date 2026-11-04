@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-04T15:17:59.925Z",
+ "updatedAt": "2026-11-04T15:18:02.093Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -72,6 +72,17 @@
    "kind": "deadline",
    "status": "klaar",
    "created": 1793700328477
+  },
+  {
+   "id": "morgen-mw29gsbb8admd",
+   "team": "ontwerp",
+   "title": "Morgen bekijken hoe de protype er ziet en de grasshopper bestand te maken.",
+   "who": "team",
+   "due": "2026-11-05",
+   "kind": "taak",
+   "status": "open",
+   "created": 1793805481642,
+   "fromRefl": "mw29gsbb8admd"
   }
  ],
  "milestones": [
