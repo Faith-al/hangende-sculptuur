@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-04T15:11:08.049Z",
+ "updatedAt": "2026-11-04T15:17:59.925Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -191,6 +191,19 @@
    "at": 1793700903469,
    "photos": [
     "photos/mw0j7ewdpfiav-mw20c48w-1.jpg"
+   ]
+  },
+  {
+   "id": "mw29gsbb8admd",
+   "member": "",
+   "group": "ontwerp",
+   "date": "2026-11-04",
+   "done": "We hebben een voorbeeld knooppunt gemaakt",
+   "result": "onderweg",
+   "next": "Morgen bekijken hoe de protype er ziet en de grasshopper bestand te maken.",
+   "at": 1793805476941,
+   "photos": [
+    "photos/mw29gsbb8admd-1.jpg"
    ]
   }
  ],
