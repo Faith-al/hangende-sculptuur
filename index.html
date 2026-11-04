@@ -156,6 +156,8 @@ textarea{resize:vertical;min-height:64px}
 .flabel{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg label{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--inner);border-radius:99px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.who-seg label{white-space:nowrap;flex:0 0 auto}
+.who-seg label:has(input:checked){border-color:var(--accent);background:rgba(255,181,71,.12)}
 .field .seg label{font:600 14px var(--f-body);letter-spacing:0;text-transform:none;color:var(--fg)}
 .seg input{accent-color:var(--fg);margin:0}
 .seg label.ok:has(input:checked){background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
@@ -548,9 +550,17 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <div class="tsum" id="teamSummary"></div>
     </section>
     <section style="display:grid;gap:14px;align-content:start" aria-labelledby="rfTitle" id="reflSection">
-      <div class="team-head"><h2 id="rfTitle">Voortgang per teamlid invullen</h2><span class="muted" style="font-size:13px">Komt op de kaart van dat teamlid te staan</span></div>
+      <div class="team-head"><h2 id="rfTitle">Voortgang invullen</h2><span class="muted" style="font-size:13px">Voor jezelf, een teamlid of een heel team</span></div>
       <form class="reflform" id="reflForm">
-        <div class="field"><label for="r-member">Voor wie?</label><select id="r-member" name="member" required></select></div>
+        <div class="field full"><span class="flabel" id="r-target-l">Voor wie is deze voortgang?</span>
+          <div class="seg who-seg" role="radiogroup" aria-labelledby="r-target-l">
+            <label><input type="radio" name="target" value="me" id="rt-me"> <span id="rt-me-l">Mezelf</span></label>
+            <label><input type="radio" name="target" value="team:ontwerp"> Team Ontwerp</label>
+            <label><input type="radio" name="target" value="team:productie"> Team Productie</label>
+            <label><input type="radio" name="target" value="other"> Ander teamlid</label>
+          </div>
+          <select id="r-member" name="member" hidden aria-label="Kies teamlid"></select>
+          <p class="muted" id="r-target-hint" style="margin:0;font-size:12.5px"></p></div>
         <div class="field"><label for="r-date">Datum</label><input id="r-date" name="date" type="date" required></div>
         <div class="field full"><label for="r-done">Wat je hebt gedaan vandaag</label><textarea id="r-done" name="done" maxlength="800" required placeholder="Bijv. testprintje gemaakt van knoop v1"></textarea></div>
         <div class="field full"><span class="flabel" id="r-res-l">Hoe het ging</span>
@@ -902,7 +912,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     const acts=el('div','refl-actions');
     if(mine[0])acts.append(el('span','rdate',fmtDate(mine[0].date)));
     if(canWrite){const add=el('button','linkbtn','+ Invullen');add.type='button';add.addEventListener('click',()=>{
-      $('#r-member').value=target;$('#reflSection').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});$('#r-done').focus({preventScroll:true})});acts.append(add)}
+      setTarget(target);$('#reflSection').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});$('#r-done').focus({preventScroll:true})});acts.append(add)}
     head.append(acts);box.append(head);
     if(!mine.length){box.append(el('p','none',target.startsWith('team:')?'Nog geen groepsvoortgang ingevuld.':'Nog niets ingevuld.'));return box}
     box.append(reflDl(mine[0]));
@@ -947,7 +957,9 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   $('#reflForm').addEventListener('submit',async e=>{
     e.preventDefault();if(!db)return;const f=e.target,fd=new FormData(f);
     const who=fd.get('member')||'';const rec={member:who.startsWith('team:')?'':who,group:who.startsWith('team:')?who.slice(5):'',date:fd.get('date')||ymd(today()),done:(fd.get('done')||'').trim(),result:fd.get('result')||'',next:(fd.get('next')||'').trim(),at:Date.now()};
-    if((!rec.member&&!rec.group)||!rec.done)return;
+    if(!rec.member&&!rec.group){$('#r-target-hint').textContent='Kies eerst voor wie deze voortgang is.';$('#r-target-hint').style.color='var(--bad)';return}
+    $('#r-target-hint').style.color='';
+    if(!rec.done)return;
     const btn=f.querySelector('button[type=submit]');if(btn.disabled)return;btnBusy(btn,'Opslaan…');let ok=false;
     try{const rid=uid();const files=[...($('#r-photos').files||[])].slice(0,4);
       if(files.length)rec.photos=await uploadPhotos(files,rid,btn);
@@ -1122,7 +1134,15 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
     }catch(err){$('#dayMsg').textContent='Opslaan lukte niet'+(err&&err.detail?' (code '+err.detail+')':'')+'. Probeer het opnieuw; al geüploade foto\'s worden niet dubbel gezet.';writeFail(err)}
     finally{btnDone(btn,ok)}
   });
-  function presetMember(){const me=getMe(),sel=$('#r-member');if(me&&sel&&!sel.value)sel.value=me}
+  function targetHint(){const v=$('#r-member').value;const h=$('#r-target-hint');
+    h.textContent=!v?'Kies hierboven voor wie het is.':v.startsWith('team:')?'Komt bij Teams te staan, in het blok van '+(v==='team:ontwerp'?'Ontwerp':'Productie')+'. Morgen wordt een taak voor het hele team.':'Komt op de kaart van '+v+' en in diens Mijn pagina.'}
+  function setTarget(v){const me=getMe(),sel=$('#r-member');
+    document.querySelectorAll('[name=target]').forEach(r=>{r.checked=(v===me&&me&&r.value==='me')||r.value===v||(r.value==='other'&&v&&!v.startsWith('team:')&&v!==me)});
+    sel.hidden=!(v&&!v.startsWith('team:')&&v!==me)&&!(document.querySelector('[name=target][value=other]').checked);sel.value=v||'';targetHint()}
+  document.querySelectorAll('[name=target]').forEach(r=>r.addEventListener('change',()=>{const me=getMe();
+    if(r.value==='me'){setTarget(me)}else if(r.value==='other'){$('#r-member').hidden=false;$('#r-member').value='';targetHint();$('#r-member').focus()}else setTarget(r.value)}));
+  $('#r-member').addEventListener('change',targetHint);
+  function presetMember(){const me=getMe();$('#rt-me-l').textContent=me?'Mezelf ('+me+')':'Mezelf';$('#rt-me').disabled=!me;if(!$('#r-member').value)targetHint()}
   presetMember();$('#meSel').addEventListener('change',presetMember);
 
   /* ---------- Welkom ---------- */
