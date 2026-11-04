@@ -369,6 +369,10 @@ textarea{resize:vertical;min-height:64px}
 .wc-names button{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--inner);color:var(--fg);font:600 14px var(--f-body);cursor:pointer;text-align:left}
 .wc-names button:hover,.wc-names button:focus-visible{border-color:var(--accent)}
 .wc-names .avatar{width:26px;height:26px;font-size:12px}
+.wc-help{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:8px 14px;font-size:14px;max-height:60vh;overflow-y:auto}
+.wc-help dt{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);padding-top:3px}
+.wc-help dd{margin:0}
+@media (max-width:480px){.wc-help{grid-template-columns:1fr}.wc-help dd{margin-bottom:6px}}
 .wc-tips{margin:0;padding-left:20px;display:grid;gap:8px;font-size:14px}
 .lockhint{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;border:1px dashed var(--line);border-radius:8px;font-size:13.5px;color:var(--muted)}
 .dropzone{border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:13px;color:var(--muted);text-align:center}
@@ -614,6 +618,20 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
       <p id="wcMsg" class="status err" style="margin:0"></p>
       <div class="ed-actions"><button class="btn" type="submit" id="wcUnlock">Ontgrendelen</button><button class="linkbtn" type="button" id="wcSkip">Ik heb de code nog niet</button></div>
     </form>
+    <div class="wc-step" data-step="help" hidden>
+      <h3>Hoe werkt het?</h3>
+      <dl class="wc-help">
+        <dt>Teamcode</dt><dd>Zonder code kun je alleen kijken. Met de code van Faith (uit de groepsapp) kun je afvinken, taken toevoegen en je dag afsluiten. Klik op <b>Vergrendelen</b> als je op een gedeelde computer zit.</dd>
+        <dt>Mijn pagina</dt><dd>Jouw eigen taken en je voortgang. Kies rechtsboven je naam. Vink een taak af als hij klaar is.</dd>
+        <dt>Dag afsluiten</dt><dd>Aan het eind van de dag: wat heb je gedaan, hoe ging het, en wat doe je de volgende keer. Foto's kun je kiezen, slepen of plakken (Ctrl+V).</dd>
+        <dt>+ Taak</dt><dd>Iets nieuws te doen? Voeg het toe voor jezelf, je team of beide teams.</dd>
+        <dt>Wat er gebeurt</dt><dd>Updates, foto's en afgeronde taken van iedereen. <b>NIEUW</b> = sinds je laatste bezoek.</dd>
+        <dt>Weekplanning</dt><dd>Alle taken per dag. Maandag en dinsdag zijn leerplekdagen. Klik op een week om hem in of uit te klappen, op een taak om hem te bewerken.</dd>
+        <dt>Teamleden</dt><dd>Het tabblad bovenaan. Hier zie je de taken en voortgang van jou en je groepsgenoten, de groepsvoortgang van Ontwerp en Productie, en kun je voortgang invullen voor een teamlid of het hele team.</dd>
+        <dt>Ververs</dt><dd>Wat anderen invullen zie je binnen een paar minuten. Klik op <b>↻ Ververs</b> om het meteen te zien.</dd>
+      </dl>
+      <div class="ed-actions"><button class="btn" type="button" id="wcHelpClose">Sluiten</button><button class="linkbtn" type="button" id="wcHelpName">Andere naam kiezen</button><button class="linkbtn" type="button" id="wcHelpCode">Teamcode invullen</button></div>
+    </div>
     <div class="wc-step" data-step="3" hidden>
       <span class="eyebrow">Stap 3 van 3</span>
       <h3 id="wcDoneTitle">Klaar!</h3>
@@ -622,6 +640,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
         <li>Aan het eind van de dag: klik op <b>Dag afsluiten</b> en vertel kort wat je hebt gedaan. Een foto kun je ook plakken.</li>
         <li>Iets nieuws te doen? Klik op <b>+ Taak</b>.</li>
         <li>Bij <b>Wat er gebeurt</b> zie je wat er nieuw is sinds je laatste bezoek.</li>
+        <li>Op het tabblad <b>Teamleden</b> zie je de taken en voortgang van jou, je groepsgenoten en beide teams.</li>
       </ul>
       <p class="muted" id="wcLockedNote" style="font-size:13px;margin:0" hidden>Je kunt de code later invullen met de knop <b>Teamcode invullen</b> bovenaan.</p>
       <div class="ed-actions"><button class="btn" type="button" id="wcDone">Aan de slag</button></div>
@@ -1092,7 +1111,7 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
 
   /* ---------- Welkom ---------- */
   function wcShow(n){document.querySelectorAll('#welcomeDlg .wc-step').forEach(x=>x.hidden=x.dataset.step!=String(n));
-    const f={1:'#wcNames button',2:'#wcCode',3:'#wcDone'}[n];setTimeout(()=>{const e=document.querySelector(f);if(e)e.focus()},30)}
+    const f={1:'#wcNames button',2:'#wcCode',3:'#wcDone',help:'#wcHelpClose'}[n];setTimeout(()=>{const e=document.querySelector(f);if(e)e.focus()},30)}
   (()=>{const box=$('#wcNames');MEMBERS.forEach(m=>{const b=el('button');b.type='button';const av=el('span','avatar '+(m.teams.length>1?'beide':m.teams[0]),m.name[0]);b.append(av,m.name);
     b.addEventListener('click',()=>{setMe(m.name);$('#meSel').value=m.name;presetMember();renderMe();if(canWrite){finishWc()}else wcShow(2)});box.append(b)})})();
   function openWelcome(step){const d=$('#welcomeDlg');$('#wcMsg').textContent='';wcShow(step||1);if(d.showModal)d.showModal();else d.setAttribute('open','')}
@@ -1103,7 +1122,10 @@ details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:60
   $('#wcSkip').addEventListener('click',finishWc);
   $('#wcDone').addEventListener('click',()=>{try{localStorage.setItem('hs-welcomed','1')}catch(_){}$('#welcomeDlg').close()});
   $('#welcomeDlg').addEventListener('close',()=>{try{localStorage.setItem('hs-welcomed','1')}catch(_){}});
-  $('#btnHelp').addEventListener('click',()=>openWelcome(getMe()?(canWrite?3:2):1));
+  $('#btnHelp').addEventListener('click',()=>{$('#wcHelpCode').hidden=canWrite;openWelcome('help')});
+  $('#wcHelpClose').addEventListener('click',()=>$('#welcomeDlg').close());
+  $('#wcHelpName').addEventListener('click',()=>wcShow(1));
+  $('#wcHelpCode').addEventListener('click',()=>wcShow(2));
   setTimeout(()=>{let seen=false;try{seen=localStorage.getItem('hs-welcomed')==='1'}catch(_){}if(!seen&&!getMe())openWelcome(1)},600);
 
   /* ---------- Wat er gebeurt ---------- */
