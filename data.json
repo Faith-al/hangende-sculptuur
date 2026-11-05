@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-05T10:42:39.816Z",
+ "updatedAt": "2026-11-05T12:07:26.205Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -185,7 +185,8 @@
    "group": "",
    "member": "Edgar",
    "next": "Verder duiken in mogelijkheden voor knooppunten los te krijgen/standalone zonder de buizen zelf en of dat überhaupt mogelijk is of anders kijken naar andere mogelijkheden.",
-   "result": "onderweg"
+   "result": "onderweg",
+   "nextDone": true
   },
   {
    "id": "mw0j1xnhw0adw",
