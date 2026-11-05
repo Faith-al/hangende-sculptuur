@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-05T10:41:02.649Z",
+ "updatedAt": "2026-11-05T10:41:56.041Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -87,6 +87,18 @@
    "status": "open",
    "created": 1793805481642,
    "fromRefl": "mw29gsbb8admd"
+  },
+  {
+   "id": "mw3f1o5par184",
+   "title": "Concept ontwerp geschetst",
+   "team": "ontwerp",
+   "kind": "taak",
+   "due": "2026-10-30",
+   "who": "Esmay",
+   "status": "klaar",
+   "doneAt": 1793875315597,
+   "doneBy": "Esmay",
+   "created": 1793875315597
   }
  ],
  "milestones": [
