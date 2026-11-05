@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-04T21:19:12.762Z",
+ "updatedAt": "2026-11-05T10:41:02.649Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -27,12 +27,12 @@
    "due": "2026-11-04",
    "fromRefl": "02trk76dw9o31dkcl6s2",
    "kind": "taak",
-   "status": "open",
+   "status": "klaar",
    "team": "ontwerp",
    "title": "bespreken welke concept ze gaan doen",
    "who": "team",
-   "doneAt": null,
-   "doneBy": ""
+   "doneAt": 1793875262253,
+   "doneBy": "Esmay"
   },
   {
    "id": "morgen-c4g18cbrusjmdtd6fk72",
