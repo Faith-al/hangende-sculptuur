@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-05T12:07:42.774Z",
+ "updatedAt": "2026-11-05T12:27:12.165Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -243,6 +243,19 @@
    "result": "onderweg",
    "next": "Nieuwe print maken en zeker weten dat die gaat werken",
    "at": 1793827094604
+  },
+  {
+   "id": "mw3iszx1gnp6c",
+   "member": "Esmay",
+   "group": "",
+   "date": "2026-11-05",
+   "done": "Concept geschetst voor het ontwerp team",
+   "result": "geslaagd",
+   "next": "Concept kiezen",
+   "at": 1793881629397,
+   "photos": [
+    "photos/mw3iszx1gnp6c-1.jpg"
+   ]
   }
  ],
  "weeks": {
