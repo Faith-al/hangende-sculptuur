@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-05T10:41:56.041Z",
+ "updatedAt": "2026-11-05T10:42:38.123Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -259,7 +259,7 @@
   }
  },
  "teller": {
-  "knopenGeprint": 1,
+  "knopenGeprint": 0,
   "knopenTotaal": 0,
   "kokers": 0
  }
