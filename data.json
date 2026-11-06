@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-05T14:45:43.325Z",
+ "updatedAt": "2026-11-06T10:54:14.262Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -263,12 +263,14 @@
    "member": "Edgar",
    "group": "",
    "date": "2026-11-05",
-   "done": "Begonnen met het uitvogelen van de haakse aansluiting (hangend) tussen de buizen samen met Dóra.",
-   "result": "onderweg",
+   "done": "Begonnen met het uitvogelen van de haakse aansluiting (hangend) tussen de buizen samen met Dóra. 3D print goed eruit gekomen. Verder kijken hoe het beter kan/samenvoegen met de bevindingen van Faith",
+   "result": "geslaagd",
    "next": "Kijken of de test print van het dopje gelukt is en eventuele aanpassingen daaraan doen. Anders kijken of de cylinder met haakje goed gaat voor de verbinden van de horizontale buis naar verticale buis.",
    "at": 1793889939889,
    "photos": [
-    "photos/mw3nr4c156wm7-1.jpg"
+    "photos/mw3nr4c156wm7-1.jpg",
+    "photos/mw3nr4c156wm7-mw4ux993-1.jpg",
+    "photos/mw3nr4c156wm7-mw4ux993-2.jpg"
    ]
   }
  ],
