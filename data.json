@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-16T13:28:51.783Z",
+ "updatedAt": "2026-11-16T13:34:42.875Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -273,6 +273,22 @@
     "photos/mw3nr4c156wm7-mw4ux993-2.jpg"
    ],
    "nextDone": true
+  },
+  {
+   "id": "mwjb21f4j2mfp",
+   "member": "Edgar",
+   "group": "",
+   "date": "2026-11-13",
+   "done": "Gelukt om het eindresultaat van de koker te printen + individuele draai eraan. Inclusief de trekkrachtopvanging van Faith. Beide ringen ook mee geprint om hem aan op te hangen en vast te zetten.",
+   "result": "geslaagd",
+   "next": "Verder kijken voor de verbinding tussen de ring en het haakje met de koker, mogelijk met een idee van Dóra of een normaal touw/draadje?",
+   "at": 1794836073136,
+   "photos": [
+    "photos/mwjb21f4j2mfp-1.jpg",
+    "photos/mwjb21f4j2mfp-2.jpg",
+    "photos/mwjb21f4j2mfp-3.jpg",
+    "photos/mwjb21f4j2mfp-4.jpg"
+   ]
   }
  ],
  "weeks": {
