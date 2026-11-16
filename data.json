@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-06T10:54:14.262Z",
+ "updatedAt": "2026-11-16T13:28:51.783Z",
  "tasks": [
   {
    "id": "concept-knoop",
@@ -271,7 +271,8 @@
     "photos/mw3nr4c156wm7-1.jpg",
     "photos/mw3nr4c156wm7-mw4ux993-1.jpg",
     "photos/mw3nr4c156wm7-mw4ux993-2.jpg"
-   ]
+   ],
+   "nextDone": true
   }
  ],
  "weeks": {
